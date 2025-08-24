@@ -1,29 +1,14 @@
+// ai/server.js
 import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
 import OpenAI from "openai";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 10000;
-
-app.use(cors({
-  origin: "https://educonnect-958e2.web.app",
-  methods: ["GET","POST","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"],
-  credentials: true
-}));
-
-app.use(express.json());
-
-// Проверка сервера
-app.get("/", (req, res) => {
-  res.send("✅ Server is running");
-});
+const router = express.Router();
 
 // Эндпоинт AI объяснения
-app.post("/api/ai-explain", async (req, res) => {
+router.post("/ai-explain", async (req, res) => {
   const { term } = req.body;
   if (!term) return res.status(400).json({ error: "Term is required" });
 
@@ -56,4 +41,5 @@ app.post("/api/ai-explain", async (req, res) => {
     res.status(500).json({ error: "AI explanation failed" });
   }
 });
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+export default router;
