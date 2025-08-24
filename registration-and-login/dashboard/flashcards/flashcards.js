@@ -387,7 +387,7 @@ class FlashcardsTrainer {
         this.showLoading(true);
 
         // Отправка запроса на твой сервер Render
-        const response = await fetch('https://school-forumforschool.onrender.com/api/ai', {
+        const response = await fetch('https://school-forumforschool.onrender.com/api/flashcards', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: prompt })

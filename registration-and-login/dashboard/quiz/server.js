@@ -13,7 +13,7 @@ const openai = new OpenAI({
 });
 
 // Эндпоинт генерации теста
-router.post('/generate-quiz', async (req, res) => {
+router.post('/', async (req, res) => {
   const { material, questionCount } = req.body;
 
   if (!material || !questionCount) {
