@@ -158,25 +158,35 @@ class QuizManager {
         finally { uiManager.hideLoading(); }
     }
 
-    async callAIService(material, count) {
-        try {
-            const response = await fetch('https://school-forumforschool.onrender.com/api/quiz', { 
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        material: material,
-        questionCount: count
-    })
-});
+   async callAIService(material, count) {
+    try {
+        const response = await fetch('https://school-forumforschool.onrender.com/api/quiz', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ material, questionCount: count })
+        });
 
-            if (!response.ok) { const text = await response.text(); console.error(text); throw new Error('AI fetch failed'); }
-            const data = await response.json();
-            if (!data.response) { console.error(data); throw new Error('Invalid AI response'); }
-            const questions = JSON.parse(data.response.trim());
-            if (!Array.isArray(questions)) throw new Error('Invalid AI response array');
-            return questions;
-        } catch (e) { console.error(e); throw e; }
+        if (!response.ok) {
+            const text = await response.text();
+            console.error(text);
+            throw new Error('AI fetch failed');
+        }
+
+        const data = await response.json();
+
+        if (!data.questions || !Array.isArray(data.questions)) {
+            console.error(data);
+            throw new Error('Invalid AI response');
+        }
+
+        return data.questions; // возвращаем массив напрямую
+
+    } catch (e) {
+        console.error(e);
+        throw e;
     }
+}
+
 
     displayGeneratedQuiz() {
         const container = document.querySelector('.generated-quiz-preview');
