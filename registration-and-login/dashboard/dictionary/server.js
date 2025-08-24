@@ -10,7 +10,7 @@ const router = express.Router();
 // Инициализация OpenAI один раз
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-router.post("/ai-explain", async (req, res) => {
+router.post("/", async (req, res) => {
   const { term } = req.body;
   if (!term) return res.status(400).json({ error: "Term is required" });
 

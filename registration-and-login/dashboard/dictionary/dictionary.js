@@ -1,11 +1,11 @@
 // Firebase Configuration (Replace with your actual config)
 const firebaseConfig = {
-      apiKey: "AIzaSyCkU8o1vz4Tmo0yVRFrlq2_1_eDfI_GPaA",
-      authDomain: "educonnect-958e2.firebaseapp.com",
-      projectId: "educonnect-958e2",
-      storageBucket: "educonnect-958e2.firebasestorage.com",
-      messagingSenderId: "1044066506835",
-      appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6",
+    apiKey: "AIzaSyCkU8o1vz4Tmo0yVRFrlq2_1_eDfI_GPaA",
+    authDomain: "educonnect-958e2.firebaseapp.com",
+    projectId: "educonnect-958e2",
+    storageBucket: "educonnect-958e2.firebasestorage.com",
+    messagingSenderId: "1044066506835",
+    appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6",
 };
 
 // Initialize Firebase
@@ -21,20 +21,27 @@ const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
 const noResults = document.getElementById('noResults');
 
+// Ensure elements exist
+if (!searchInput || !loadingSpinner || !resultsSection) {
+    console.error('Critical DOM elements missing. Check HTML.');
+}
+
 // Search State
 let searchTimeout;
 const DEBOUNCE_DELAY = 300;
 const AI_ENDPOINT = "https://school-forumforschool.onrender.com/api/dictionary";
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     showWelcomeMessage();
 });
 
 function setupEventListeners() {
+    if (!searchInput) return;
+    
     searchInput.addEventListener('input', handleSearchInput);
-    searchInput.addEventListener('keypress', function(e) {
+    searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             clearTimeout(searchTimeout);
             performSearch(searchInput.value.trim());
@@ -44,23 +51,16 @@ function setupEventListeners() {
 
 function handleSearchInput(e) {
     const query = e.target.value.trim();
-    
-    // Clear previous timeout
     clearTimeout(searchTimeout);
-    
-    // Hide error and no results messages
     hideMessages();
     
-    if (query.length === 0) {
+    if (!query) {
         showWelcomeMessage();
         return;
     }
     
-    if (query.length < 2) {
-        return;
-    }
+    if (query.length < 2) return;
     
-    // Debounce the search
     searchTimeout = setTimeout(() => {
         performSearch(query);
     }, DEBOUNCE_DELAY);
@@ -74,13 +74,10 @@ async function performSearch(query) {
     clearResults();
     
     try {
-        // First, search Firebase
         const firebaseResults = await searchFirestore(query);
-        
         if (firebaseResults.length > 0) {
             displayResults(firebaseResults, 'database');
         } else {
-            // If no Firebase results, try AI
             const aiResults = await searchAI(query);
             if (aiResults.length > 0) {
                 displayResults(aiResults, 'ai');
@@ -99,52 +96,24 @@ async function performSearch(query) {
 async function searchFirestore(query) {
     try {
         const queryLower = query.toLowerCase();
-        
-        // Search in the 'terms' collection where searchKeywords array contains the query
         const snapshot = await db.collection('terms')
             .where('searchKeywords', 'array-contains', queryLower)
             .limit(10)
             .get();
-        
-        const results = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            results.push({
-                id: doc.id,
-                term: data.term,
-                definition: data.definition,
-                formula: data.formula,
-                examples: data.examples,
-                searchKeywords: data.searchKeywords
-            });
-        });
-        
-        // If no exact matches, try partial matching
+
+        let results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
         if (results.length === 0) {
             const partialSnapshot = await db.collection('terms').get();
-            partialSnapshot.forEach(doc => {
+            results = partialSnapshot.docs.filter(doc => {
                 const data = doc.data();
-                const matchesKeywords = data.searchKeywords?.some(keyword => 
-                    keyword.toLowerCase().includes(queryLower) || 
-                    queryLower.includes(keyword.toLowerCase())
-                );
-                const matchesTerm = data.term?.toLowerCase().includes(queryLower);
-                const matchesDefinition = data.definition?.toLowerCase().includes(queryLower);
-                
-                if (matchesKeywords || matchesTerm || matchesDefinition) {
-                    results.push({
-                        id: doc.id,
-                        term: data.term,
-                        definition: data.definition,
-                        formula: data.formula,
-                        examples: data.examples,
-                        searchKeywords: data.searchKeywords
-                    });
-                }
-            });
+                return (data.term?.toLowerCase().includes(queryLower) ||
+                        data.definition?.toLowerCase().includes(queryLower) ||
+                        data.searchKeywords?.some(k => k.toLowerCase().includes(queryLower)));
+            }).map(doc => ({ id: doc.id, ...doc.data() }));
         }
-        
-        return results.slice(0, 6); // Limit to 6 results
+
+        return results.slice(0, 6);
     } catch (error) {
         console.error('Firebase search error:', error);
         return [];
@@ -155,33 +124,12 @@ async function searchAI(query) {
     try {
         const response = await fetch(AI_ENDPOINT, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                query: query,
-                type: 'dictionary_search'
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, type: 'dictionary_search' })
         });
-        
-        if (!response.ok) {
-            throw new Error(`AI search failed: ${response.status}`);
-        }
-        
+
+        if (!response.ok) throw new Error(`AI search failed: ${response.status}`);
         const data = await response.json();
-        
-        // Expected AI response format:
-        // {
-        //   results: [
-        //     {
-        //       term: "string",
-        //       definition: "string",
-        //       formula: "string" (optional),
-        //       examples: ["string", "string"] (optional)
-        //     }
-        //   ]
-        // }
-        
         return data.results || [];
     } catch (error) {
         console.error('AI search error:', error);
@@ -191,7 +139,6 @@ async function searchAI(query) {
 
 function displayResults(results, source) {
     clearResults();
-    
     results.forEach((result, index) => {
         const card = createTermCard(result, source, index);
         resultsSection.appendChild(card);
@@ -202,86 +149,66 @@ function createTermCard(term, source, index) {
     const card = document.createElement('div');
     card.className = 'term-card';
     card.style.animationDelay = `${index * 0.1}s`;
-    
+
     let html = `
         <h2 class="term-name">${escapeHtml(term.term)}</h2>
         <p class="term-definition">${escapeHtml(term.definition)}</p>
     `;
-    
-    // Add formula if present
-    if (term.formula) {
-        html += `
-            <div class="term-formula">
-                <div class="formula-label">Formula</div>
-                <code>${escapeHtml(term.formula)}</code>
-            </div>
-        `;
-    }
-    
-    // Add examples if present
-    if (term.examples && term.examples.length > 0) {
-        html += `
-            <div class="term-examples">
-                <div class="examples-label">Examples</div>
-                <ul class="examples-list">
-                    ${term.examples.map(example => 
-                        `<li>${escapeHtml(example)}</li>`
-                    ).join('')}
-                </ul>
-            </div>
-        `;
-    }
-    
-    // Add source badge
-    const sourceBadge = source === 'database' ? 'Database' : 'AI Assistant';
-    html += `<span class="source-badge">${sourceBadge}</span>`;
-    
+
+    if (term.formula) html += `<div class="term-formula"><div class="formula-label">Formula</div><code>${escapeHtml(term.formula)}</code></div>`;
+    if (term.examples?.length) html += `<div class="term-examples"><div class="examples-label">Examples</div><ul>${term.examples.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul></div>`;
+
+    html += `<span class="source-badge">${source === 'database' ? 'Database' : 'AI Assistant'}</span>`;
+
     card.innerHTML = html;
     return card;
 }
 
 function showLoading(show) {
+    if (!loadingSpinner) return;
     if (show) {
-        loadingSpinner.classList.add('show');
-        searchIcon.style.display = 'none';
+        loadingSpinner.style.display = 'block';
+        if (searchIcon) searchIcon.style.display = 'none';
     } else {
-        loadingSpinner.classList.remove('show');
-        searchIcon.style.display = 'block';
+        loadingSpinner.style.display = 'none';
+        if (searchIcon) searchIcon.style.display = 'block';
     }
 }
 
 function showWelcomeMessage() {
     clearResults();
     hideMessages();
-    
+    if (!resultsSection) return;
+
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = 'welcome-message';
     welcomeDiv.innerHTML = `
         <h3>Welcome to the Dictionary & Glossary</h3>
         <p>Start typing to search for terms, definitions, and formulas. We'll search our database first, and if needed, get help from AI.</p>
     `;
-    
     resultsSection.appendChild(welcomeDiv);
 }
 
 function showError(message) {
     hideMessages();
-    errorText.textContent = message;
-    errorMessage.classList.remove('hidden');
+    if (errorText && errorMessage) {
+        errorText.textContent = message;
+        errorMessage.classList.remove('hidden');
+    }
 }
 
 function showNoResults() {
     hideMessages();
-    noResults.classList.remove('hidden');
+    if (noResults) noResults.style.display = 'block';
 }
 
 function hideMessages() {
-    errorMessage.classList.add('hidden');
-    noResults.classList.add('hidden');
+    if (errorMessage) errorMessage.classList.add('hidden');
+    if (noResults) noResults.style.display = 'none';
 }
 
 function clearResults() {
-    resultsSection.innerHTML = '';
+    if (resultsSection) resultsSection.innerHTML = '';
 }
 
 function escapeHtml(text) {
@@ -290,21 +217,16 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Utility function to check Firebase connection
+// Check Firebase connection
+checkFirebaseConnection().then(connected => {
+    if (!connected) console.warn('Firebase not connected. Only AI search will be available.');
+});
 async function checkFirebaseConnection() {
     try {
-        const testRef = db.collection('terms').limit(1);
-        await testRef.get();
+        await db.collection('terms').limit(1).get();
         return true;
     } catch (error) {
         console.warn('Firebase connection failed:', error);
         return false;
     }
 }
-
-// Initialize connection check
-checkFirebaseConnection().then(connected => {
-    if (!connected) {
-        console.warn('Firebase not connected. Only AI search will be available.');
-    }
-});
