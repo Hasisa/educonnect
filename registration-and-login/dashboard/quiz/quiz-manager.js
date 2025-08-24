@@ -161,9 +161,14 @@ class QuizManager {
     async callAIService(material, count) {
         try {
             const response = await fetch('https://school-forumforschool.onrender.com/api/quiz', { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: `Сгенерируй ${count} вопросов по этому материалу. Ответь строго в формате JSON: [{"text":"Вопрос 1","answers":["ответ1","ответ2","ответ3","ответ4"],"correctAnswer":0}] Материал: ${material}` })
-            });
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        material: material,
+        questionCount: count
+    })
+});
+
             if (!response.ok) { const text = await response.text(); console.error(text); throw new Error('AI fetch failed'); }
             const data = await response.json();
             if (!data.response) { console.error(data); throw new Error('Invalid AI response'); }
