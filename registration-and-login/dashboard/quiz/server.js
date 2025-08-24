@@ -21,7 +21,6 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Формируем prompt для AI
     const prompt = `
 Create ${questionCount} multiple-choice questions based on the following study material.
 Each question must have 4 answers and mark the correct one.
@@ -32,7 +31,6 @@ Study material:
 ${material}
 `;
 
-    // Запрос к OpenAI
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
@@ -43,14 +41,17 @@ ${material}
 
     let questions;
     try {
-      questions = JSON.parse(text);
+      // Убираем лишние символы и парсим JSON
+      const cleanedText = text.trim().replace(/^\uFEFF/, ''); 
+      questions = JSON.parse(cleanedText);
+
       if (!Array.isArray(questions)) throw new Error('AI response is not an array');
     } catch (err) {
       console.error('Failed to parse AI response:', text, err);
       return res.status(500).json({ error: 'Failed to parse AI response from OpenAI' });
     }
 
-    // Возвращаем готовый JSON с вопросами
+    // Возвращаем массив напрямую
     res.json({ questions });
 
   } catch (error) {
