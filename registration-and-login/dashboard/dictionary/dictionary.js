@@ -16,10 +16,10 @@ const db = firebase.firestore();
 const searchInput = document.getElementById('searchInput');
 const loadingSpinner = document.getElementById('loadingSpinner');
 const searchIcon = document.querySelector('.search-icon');
-const resultsSection = document.getElementById('resultsSection');
+const resultsSection = document.getElementById('resultsContainer');
 const errorMessage = document.getElementById('errorMessage');
 const errorText = document.getElementById('errorText');
-const noResults = document.getElementById('noResults');
+const noResults = document.getElementById('noResultsContainer');
 
 // Ensure elements exist
 if (!searchInput || !loadingSpinner || !resultsSection) {
@@ -124,18 +124,26 @@ async function searchAI(query) {
     try {
         const response = await fetch(AI_ENDPOINT, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, type: 'dictionary_search' })
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ term: query }) // <- исправлено
         });
 
-        if (!response.ok) throw new Error(`AI search failed: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`AI search failed: ${response.status}`);
+        }
+
         const data = await response.json();
-        return data.results || [];
+
+        // Приведение к массиву результатов, чтобы фронтенд работал одинаково
+        return [data]; 
     } catch (error) {
         console.error('AI search error:', error);
         return [];
     }
 }
+
 
 function displayResults(results, source) {
     clearResults();
