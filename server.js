@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import aiRouter from "./registration-and-login/dashboard/ai/server.js";
+import aiRouter from "./registration-and-login/dashboard/aichat/server.js";
 import flashcardsRouter from "./registration-and-login/dashboard/flashcards/server.js";
 import quizRouter from "./registration-and-login/dashboard/quiz/server.js";
 import dictionaryRouter from "./registration-and-login/dashboard/dictionary/server.js";
