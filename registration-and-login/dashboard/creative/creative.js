@@ -18,12 +18,12 @@ function textToMermaidMindmap(text, topic = "Topic") {
   if (lines.length === 0) return '';
 
   // Заменяем скобки на дефисы, чтобы Mermaid не ломался
-  const safeTopic = topic.replace(/\(/g, '-').replace(/\)/g, '');
+  const safeTopic = topic.replace(/[()]/g, '-');
 
   let mermaidCode = `mindmap\n  root((${safeTopic}))`;
 
   for (let line of lines) {
-    const safeLine = line.replace(/\(/g, '-').replace(/\)/g, '');
+    const safeLine = line.replace(/[()]/g, '-');
     if (/^Branch/i.test(line)) {
       mermaidCode += `\n    ${safeLine.replace(/^Branch[:]?/i, '').trim()}`;
     } else if (/^Subtopic/i.test(line)) {
@@ -152,8 +152,21 @@ class CreativeTools {
 
     try {
       const elements = Array.isArray(data) ? data : data.elements || [];
+
+      // Ждём, пока React и Excalidraw загрузятся
+      const waitForExcalidraw = () => new Promise(resolve => {
+        const interval = setInterval(() => {
+          if (window.React && window.ReactDOM && window.Excalidraw) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 50);
+      });
+
+      await waitForExcalidraw();
+
       const excalidrawWrapper = React.createElement(
-        Excalidraw,
+        window.Excalidraw.Excalidraw,
         {
           initialData: { elements },
           viewModeEnabled: true,
@@ -161,7 +174,7 @@ class CreativeTools {
         }
       );
 
-      ReactDOM.render(excalidrawWrapper, div);
+      window.ReactDOM.render(excalidrawWrapper, div);
       container.style.display = 'block';
 
     } catch (error) {
@@ -274,3 +287,4 @@ if (!window.React) {
   script3.src = 'https://unpkg.com/@excalidraw/excalidraw/dist/excalidraw.production.min.js';
   document.head.appendChild(script3);
 }
+

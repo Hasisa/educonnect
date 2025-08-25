@@ -22,10 +22,10 @@ router.post('/', async (req, res) => {
         result = await generateMindMap(topic);
         break;
       case 'diagram':
-        result = generateMockDiagram(topic);
+        result = await generateDiagram(topic);
         break;
       case 'chart':
-        result = generateMockChart(topic);
+        result = await generateChart(topic);
         break;
       default:
         throw new Error('Unknown type');
@@ -58,8 +58,66 @@ Branch: Main branch title
     temperature: 0.7,
   });
 
-  const text = response.choices[0].message.content.trim();
-  return text;
+  return response.choices[0].message.content.trim();
+}
+
+// Генерация осмысленной diagram для Excalidraw через GPT
+async function generateDiagram(topic) {
+  const prompt = `
+Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
+- Output JSON with an array of elements suitable for Excalidraw:
+  - rectangles, ellipses, arrows, and text elements
+  - include x, y positions, width, height, strokeColor, backgroundColor, text, fontSize
+- The diagram should clearly show key concepts, their relationships, and hierarchy.
+- Example output format:
+[
+  { "id": "1", "type": "rectangle", "x": 100, "y": 100, "width": 200, "height": 100, "backgroundColor": "#dbeafe", "strokeColor": "#2563eb", "strokeWidth": 2 },
+  { "id": "2", "type": "text", "x": 150, "y": 135, "width": 100, "height": 30, "text": "Main Concept", "fontSize": 16, "textAlign": "center", "verticalAlign": "middle" }
+]
+- Output valid JSON only, no extra explanation.
+`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.7,
+  });
+
+  // Парсим JSON
+  try {
+    const text = response.choices[0].message.content.trim();
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('Diagram parse error:', e);
+    return generateMockDiagram(topic);
+  }
+}
+
+// Генерация осмысленного chart для Chart.js через GPT
+async function generateChart(topic) {
+  const prompt = `
+Generate a Chart.js configuration (JSON) for the topic "${topic}".
+- Include:
+  - type: "bar", "line", "pie", etc.
+  - data: { labels: [], datasets: [{ label, data, backgroundColor, borderColor, borderWidth }] }
+  - options: responsive, maintainAspectRatio, plugins (title and legend), scales (x and y axes)
+- Make the chart meaningful for the topic (not random numbers)
+- Output valid JSON only, no extra explanation
+`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.7,
+  });
+
+  try {
+    const text = response.choices[0].message.content.trim();
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('Chart parse error:', e);
+    return generateMockChart(topic);
+  }
 }
 
 // Mock Excalidraw diagram
