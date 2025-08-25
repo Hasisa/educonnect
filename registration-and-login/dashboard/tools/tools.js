@@ -50,13 +50,6 @@ const schoolTools = [
     route: '../dictionary/dictionary.html'
   },
   {
-    id: 'progress',
-    name: 'Progress Tracker',
-    icon: '📊',
-    description: 'Visualize personal progress and achievements.',
-    route: '../progress/progress.html'
-  },
-  {
     id: 'resources',
     name: 'Resource Finder',
     icon: '🔎',
