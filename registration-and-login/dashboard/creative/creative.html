@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creative Tools</title>
+    <link rel="stylesheet" href="creative.css">
+    
+    <!-- CDN Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/@excalidraw/excalidraw@0.17.0/dist/excalidraw.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div class="header-content">
+          <h1>Creative Tools</h1>
+          <p class="subtitle">Transform your ideas into stunning visual content with AI-powered generation</p>
+          <div class="features">
+            <div class="feature">
+              <div class="feature-icon"></div>
+              <span>Mind Maps</span>
+            </div>
+            <div class="feature">
+              <div class="feature-icon"></div>
+              <span>Diagrams</span>
+            </div>
+            <div class="feature">
+              <div class="feature-icon"></div>
+              <span>Charts</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <div class="controls">
+          <div class="input-group">
+            <input 
+              type="text" 
+              id="topicInput" 
+              placeholder="Enter your topic or data..."
+              maxlength="200"
+            />
+            
+            <select id="typeSelect">
+              <option value="mindmap">Mind Map</option>
+              <option value="diagram">Diagram</option>
+              <option value="chart">Chart</option>
+            </select>
+            
+            <button id="generateBtn" class="btn-primary">Generate</button>
+          </div>
+        </div>
+
+        <div class="visualization-container">
+          <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating your visualization...</p>
+          </div>
+          
+          <div id="visualizationArea" style="display: none;">
+            <div class="viz-header">
+              <h3 id="vizTitle"></h3>
+              <button id="downloadBtn" class="btn-secondary">Download PNG</button>
+            </div>
+            
+            <div id="mermaidContainer" class="viz-content" style="display: none;">
+              <div id="mermaidDiv"></div>
+            </div>
+            
+            <div id="excalidrawContainer" class="viz-content" style="display: none;">
+              <div id="excalidrawDiv" style="width: 100%; height: 500px;"></div>
+            </div>
+            
+            <div id="chartContainer" class="viz-content" style="display: none;">
+              <canvas id="chartCanvas" width="800" height="400"></canvas>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="./creative.js"></script>
+  </body>
+</html>

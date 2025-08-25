@@ -50,18 +50,11 @@ const schoolTools = [
     route: '../dictionary/dictionary.html'
   },
   {
-    id: 'resources',
-    name: 'Resource Finder',
-    icon: '🔎',
-    description: 'Discover recommended study materials.',
-    route: '/tools/resources'
-  },
-  {
     id: 'creative',
     name: 'Creative Tools',
     icon: '🎨',
     description: 'Build mind maps, diagrams, and visual notes.',
-    route: '/tools/creative'
+    route: '../creative/creative.html'
   }
 ];
 

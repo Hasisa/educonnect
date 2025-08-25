@@ -10,6 +10,30 @@ mermaid.initialize({
   }
 });
 
+const API_URL = 'https://school-forumforschool.onrender.com/api/generate';
+
+// Преобразует простой текст в Mermaid mindmap
+function textToMermaidMindmap(text) {
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+  if (lines.length === 0) return '';
+
+  let mermaidCode = 'mindmap\n  root';
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let level = 1;
+
+    if (/Subtopic/i.test(line)) level = 2;
+    else if (/Detail/i.test(line)) level = 3;
+    else if (/Branch/i.test(line)) level = 1;
+
+    const indent = '  '.repeat(level);
+    mermaidCode += `\n${indent}${line}`;
+  }
+
+  return mermaidCode;
+}
+
 class CreativeTools {
   constructor() {
     this.currentVisualization = null;
@@ -28,11 +52,8 @@ class CreativeTools {
     generateBtn.addEventListener('click', () => this.handleGenerate());
     downloadBtn.addEventListener('click', () => this.handleDownload());
     
-    // Allow Enter key to generate
     topicInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        this.handleGenerate();
-      }
+      if (e.key === 'Enter') this.handleGenerate();
     });
   }
 
@@ -41,10 +62,7 @@ class CreativeTools {
     const typeSelect = document.getElementById('typeSelect');
     const topic = topicInput.value.trim();
     
-    if (!topic) {
-      this.showError('Please enter a topic or data');
-      return;
-    }
+    if (!topic) return this.showError('Please enter a topic or data');
 
     const type = typeSelect.value;
     this.currentType = type;
@@ -52,23 +70,15 @@ class CreativeTools {
     this.showLoading();
     
     try {
-      const response = await fetch('/api/generate', {
+      const response = await fetch(API_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, type })
       });
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
       const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
+      if (data.error) throw new Error(data.error);
 
       await this.renderVisualization(type, data.result, topic);
       
@@ -82,10 +92,8 @@ class CreativeTools {
 
   async renderVisualization(type, data, topic) {
     this.hideAllVisualizationContainers();
-    
     const vizArea = document.getElementById('visualizationArea');
     const vizTitle = document.getElementById('vizTitle');
-    
     vizTitle.textContent = `${this.capitalizeFirst(type)}: ${topic}`;
     
     try {
@@ -102,7 +110,6 @@ class CreativeTools {
         default:
           throw new Error('Unknown visualization type');
       }
-      
       vizArea.style.display = 'block';
       this.currentVisualization = data;
       
@@ -115,23 +122,20 @@ class CreativeTools {
   async renderMermaid(data) {
     const container = document.getElementById('mermaidContainer');
     const div = document.getElementById('mermaidDiv');
-    
-    // Clear previous content
     div.innerHTML = '';
     
     try {
-      const mermaidCode = typeof data === 'string' ? data : data.mermaid || data.code || '';
-      
-      if (!mermaidCode) {
-        throw new Error('No Mermaid code provided');
+      let mermaidCode = typeof data === 'string' ? data : data.mermaid || data.code || '';
+
+      if (!mermaidCode.includes('mindmap')) {
+        mermaidCode = textToMermaidMindmap(mermaidCode);
       }
 
-      // Generate unique ID for this diagram
+      if (!mermaidCode) throw new Error('No Mermaid code provided');
+
       const id = 'mermaid-' + Date.now();
-      
       const { svg } = await mermaid.render(id, mermaidCode);
       div.innerHTML = svg;
-      
       container.style.display = 'block';
       
     } catch (error) {
@@ -143,13 +147,10 @@ class CreativeTools {
   async renderExcalidraw(data) {
     const container = document.getElementById('excalidrawContainer');
     const div = document.getElementById('excalidrawDiv');
-    
-    // Clear previous content
     div.innerHTML = '';
     
     try {
       const elements = Array.isArray(data) ? data : data.elements || [];
-      
       const excalidrawWrapper = React.createElement(
         window.ExcalidrawLib.Excalidraw,
         {
@@ -168,13 +169,10 @@ class CreativeTools {
       
     } catch (error) {
       console.error('Excalidraw rendering error:', error);
-      // Fallback: show a simple text representation
-      div.innerHTML = `
-        <div style="padding: 2rem; text-align: center; color: #64748b;">
-          <p>Diagram generated successfully!</p>
-          <p>Data: ${JSON.stringify(data, null, 2)}</p>
-        </div>
-      `;
+      div.innerHTML = `<div style="padding:2rem;text-align:center;color:#64748b;">
+        <p>Diagram generated successfully!</p>
+        <p>Data: ${JSON.stringify(data, null, 2)}</p>
+      </div>`;
       container.style.display = 'block';
     }
   }
@@ -184,19 +182,10 @@ class CreativeTools {
     const canvas = document.getElementById('chartCanvas');
     
     try {
-      // Destroy existing chart
-      if (this.currentChart) {
-        this.currentChart.destroy();
-      }
-      
+      if (this.currentChart) this.currentChart.destroy();
       const chartConfig = typeof data === 'object' ? data : JSON.parse(data);
-      
-      // Ensure we have valid chart configuration
-      if (!chartConfig.type || !chartConfig.data) {
-        throw new Error('Invalid chart configuration');
-      }
+      if (!chartConfig.type || !chartConfig.data) throw new Error('Invalid chart configuration');
 
-      // Create new chart
       const ctx = canvas.getContext('2d');
       this.currentChart = new Chart(ctx, {
         ...chartConfig,
@@ -206,36 +195,15 @@ class CreativeTools {
           maintainAspectRatio: false,
           plugins: {
             ...chartConfig.options?.plugins,
-            legend: {
-              labels: {
-                color: '#1e293b'
-              }
-            }
+            legend: { labels: { color: '#1e293b' } }
           },
           scales: {
             ...chartConfig.options?.scales,
-            y: {
-              ...chartConfig.options?.scales?.y,
-              ticks: {
-                color: '#64748b'
-              },
-              grid: {
-                color: '#e2e8f0'
-              }
-            },
-            x: {
-              ...chartConfig.options?.scales?.x,
-              ticks: {
-                color: '#64748b'
-              },
-              grid: {
-                color: '#e2e8f0'
-              }
-            }
+            y: { ...chartConfig.options?.scales?.y, ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } },
+            x: { ...chartConfig.options?.scales?.x, ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } }
           }
         }
       });
-      
       container.style.display = 'block';
       
     } catch (error) {
@@ -245,44 +213,22 @@ class CreativeTools {
   }
 
   async handleDownload() {
-    if (!this.currentVisualization || !this.currentType) {
-      this.showError('No visualization to download');
-      return;
-    }
-
+    if (!this.currentVisualization || !this.currentType) return this.showError('No visualization to download');
     try {
       let element;
-      
       switch (this.currentType) {
-        case 'mindmap':
-          element = document.getElementById('mermaidDiv');
-          break;
-        case 'diagram':
-          element = document.getElementById('excalidrawDiv');
-          break;
-        case 'chart':
-          element = document.getElementById('chartContainer');
-          break;
-        default:
-          throw new Error('Unknown visualization type');
+        case 'mindmap': element = document.getElementById('mermaidDiv'); break;
+        case 'diagram': element = document.getElementById('excalidrawDiv'); break;
+        case 'chart': element = document.getElementById('chartContainer'); break;
+        default: throw new Error('Unknown visualization type');
       }
+      if (!element) throw new Error('Visualization element not found');
 
-      if (!element) {
-        throw new Error('Visualization element not found');
-      }
-
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false
-      });
-
-      // Download the image
+      const canvas = await html2canvas(element, { backgroundColor: '#ffffff', scale: 2, logging: false });
       const link = document.createElement('a');
       link.download = `${this.currentType}-${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      
       this.showSuccess('Visualization downloaded successfully!');
       
     } catch (error) {
@@ -308,43 +254,25 @@ class CreativeTools {
     document.getElementById('generateBtn').disabled = false;
   }
 
-  showError(message) {
-    this.showMessage(message, 'error');
-  }
-
-  showSuccess(message) {
-    this.showMessage(message, 'success');
-  }
+  showError(message) { this.showMessage(message, 'error'); }
+  showSuccess(message) { this.showMessage(message, 'success'); }
 
   showMessage(message, type) {
-    // Remove existing messages
-    const existingMessages = document.querySelectorAll('.error, .success');
-    existingMessages.forEach(msg => msg.remove());
-
+    document.querySelectorAll('.error, .success').forEach(msg => msg.remove());
     const messageDiv = document.createElement('div');
     messageDiv.className = type;
     messageDiv.textContent = message;
-    
-    const controls = document.querySelector('.controls');
-    controls.appendChild(messageDiv);
-
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      messageDiv.remove();
-    }, 5000);
+    document.querySelector('.controls').appendChild(messageDiv);
+    setTimeout(() => messageDiv.remove(), 5000);
   }
 
-  capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
+  capitalizeFirst(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
 }
 
 // Initialize the application
-document.addEventListener('DOMContentLoaded', () => {
-  new CreativeTools();
-});
+document.addEventListener('DOMContentLoaded', () => { new CreativeTools(); });
 
-// Add React for Excalidraw (since Excalidraw requires React)
+// Add React for Excalidraw
 if (!window.React) {
   const script1 = document.createElement('script');
   script1.src = 'https://unpkg.com/react@17/umd/react.production.min.js';
