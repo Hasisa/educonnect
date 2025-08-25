@@ -84,10 +84,10 @@ class ChatService {
 
   async sendToAI(message) {
     try {
-      const response = await fetch(`${this.SERVER_URL}/ai`, {
+      const response = await fetch(this.SERVER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
+        body: JSON.stringify({ message }) // теперь поле message
       });
 
       if (!response.ok) {
@@ -96,7 +96,7 @@ class ChatService {
       }
 
       const data = await response.json();
-      return { success: true, response: data.response };
+      return { success: true, response: data.reply || data }; // адаптируем под формат ответа
     } catch (error) {
       console.error('Error sending message to AI:', error);
       return { success: false, error: `Не удалось обработать запрос к AI: ${error.message}` };
@@ -104,4 +104,5 @@ class ChatService {
   }
 }
 
+// ✅ Экспортируем экземпляр класса вне класса
 export default new ChatService();

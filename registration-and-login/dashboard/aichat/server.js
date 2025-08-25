@@ -8,42 +8,21 @@ const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 router.post("/", async (req, res) => {
-  const { term } = req.body;
-  if (!term) return res.status(400).json({ error: "Term is required" });
+  const { message } = req.body;
+  if (!message) return res.status(400).json({ error: "Message is required" });
 
   try {
-    const prompt = `
-Explain the term "${term}" strictly as JSON:
-{
-  "term": "${term}",
-  "definition": "...",
-  "formula": "...",
-  "relatedTerms": ["..."]
-}
-`;
-
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0
+      messages: [{ role: "user", content: message }],
+      temperature: 0.7
     });
 
-    const content = response.choices[0].message.content.trim();
-
-    try {
-      const parsed = JSON.parse(content);
-      res.json(parsed);
-    } catch {
-      res.json({
-        term,
-        definition: content,
-        formula: null,
-        relatedTerms: []
-      });
-    }
+    const reply = response.choices[0].message.content.trim();
+    res.json({ reply });
   } catch (err) {
-    console.error("AI error:", err);
-    res.status(500).json({ error: "AI explanation failed" });
+    console.error("AI chat error:", err);
+    res.status(500).json({ error: "AI chat failed" });
   }
 });
 

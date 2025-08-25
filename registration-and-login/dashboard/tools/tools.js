@@ -5,7 +5,7 @@ const schoolTools = [
     name: 'AI Study Assistant',
     icon: '🤖',
     description: 'Helps answer questions and explain topics.',
-    route: '../ai/ai.html'
+    route: '../aichat/ai.html'
   },
   {
     id: 'flashcards',
