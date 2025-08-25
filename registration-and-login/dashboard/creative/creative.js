@@ -6,29 +6,31 @@ mermaid.initialize({
     primaryColor: '#2563eb',
     primaryTextColor: '#1e293b',
     primaryBorderColor: '#3b82f6',
-    lineColor: "#e64748b",
+    lineColor: "#64748b",
   }
 });
 
 const API_URL = 'https://school-forumforschool.onrender.com/api/generate';
 
-// Преобразует простой текст в Mermaid mindmap
-function textToMermaidMindmap(text) {
-  const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+// Преобразует текст GPT → корректный Mermaid mindmap
+function textToMermaidMindmap(text, topic = "Topic") {
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
   if (lines.length === 0) return '';
 
-  let mermaidCode = 'mindmap\n  root';
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    let level = 1;
+  // Заменяем скобки на дефисы, чтобы Mermaid не ломался
+  const safeTopic = topic.replace(/\(/g, '-').replace(/\)/g, '');
 
-    if (/Subtopic/i.test(line)) level = 2;
-    else if (/Detail/i.test(line)) level = 3;
-    else if (/Branch/i.test(line)) level = 1;
+  let mermaidCode = `mindmap\n  root((${safeTopic}))`;
 
-    const indent = '  '.repeat(level);
-    mermaidCode += `\n${indent}${line}`;
+  for (let line of lines) {
+    const safeLine = line.replace(/\(/g, '-').replace(/\)/g, '');
+    if (/^Branch/i.test(line)) {
+      mermaidCode += `\n    ${safeLine.replace(/^Branch[:]?/i, '').trim()}`;
+    } else if (/^Subtopic/i.test(line)) {
+      mermaidCode += `\n      ${safeLine.replace(/^Subtopic[:]?/i, '').trim()}`;
+    } else if (/^Detail/i.test(line)) {
+      mermaidCode += `\n        ${safeLine.replace(/^Detail[:]?/i, '').trim()}`;
+    }
   }
 
   return mermaidCode;
@@ -40,7 +42,6 @@ class CreativeTools {
     this.currentType = null;
     this.excalidrawAPI = null;
     this.currentChart = null;
-    
     this.initializeEventListeners();
   }
 
@@ -51,7 +52,7 @@ class CreativeTools {
 
     generateBtn.addEventListener('click', () => this.handleGenerate());
     downloadBtn.addEventListener('click', () => this.handleDownload());
-    
+
     topicInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') this.handleGenerate();
     });
@@ -61,14 +62,14 @@ class CreativeTools {
     const topicInput = document.getElementById('topicInput');
     const typeSelect = document.getElementById('typeSelect');
     const topic = topicInput.value.trim();
-    
+
     if (!topic) return this.showError('Please enter a topic or data');
 
     const type = typeSelect.value;
     this.currentType = type;
 
     this.showLoading();
-    
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -81,7 +82,7 @@ class CreativeTools {
       if (data.error) throw new Error(data.error);
 
       await this.renderVisualization(type, data.result, topic);
-      
+
     } catch (error) {
       console.error('Generation error:', error);
       this.showError(`Failed to generate visualization: ${error.message}`);
@@ -95,11 +96,11 @@ class CreativeTools {
     const vizArea = document.getElementById('visualizationArea');
     const vizTitle = document.getElementById('vizTitle');
     vizTitle.textContent = `${this.capitalizeFirst(type)}: ${topic}`;
-    
+
     try {
       switch (type) {
         case 'mindmap':
-          await this.renderMermaid(data);
+          await this.renderMermaid(data, topic);
           break;
         case 'diagram':
           await this.renderExcalidraw(data);
@@ -112,23 +113,22 @@ class CreativeTools {
       }
       vizArea.style.display = 'block';
       this.currentVisualization = data;
-      
+
     } catch (error) {
       console.error('Render error:', error);
       this.showError(`Failed to render ${type}: ${error.message}`);
     }
   }
 
-  async renderMermaid(data) {
+  async renderMermaid(data, topic) {
     const container = document.getElementById('mermaidContainer');
     const div = document.getElementById('mermaidDiv');
     div.innerHTML = '';
-    
+
     try {
       let mermaidCode = typeof data === 'string' ? data : data.mermaid || data.code || '';
-
       if (!mermaidCode.includes('mindmap')) {
-        mermaidCode = textToMermaidMindmap(mermaidCode);
+        mermaidCode = textToMermaidMindmap(mermaidCode, topic);
       }
 
       if (!mermaidCode) throw new Error('No Mermaid code provided');
@@ -137,10 +137,11 @@ class CreativeTools {
       const { svg } = await mermaid.render(id, mermaidCode);
       div.innerHTML = svg;
       container.style.display = 'block';
-      
+
     } catch (error) {
       console.error('Mermaid rendering error:', error);
-      throw new Error('Invalid Mermaid diagram format');
+      div.innerHTML = `<div style="padding:2rem;color:#64748b;text-align:center;">Invalid Mermaid diagram format</div>`;
+      container.style.display = 'block';
     }
   }
 
@@ -148,25 +149,21 @@ class CreativeTools {
     const container = document.getElementById('excalidrawContainer');
     const div = document.getElementById('excalidrawDiv');
     div.innerHTML = '';
-    
+
     try {
       const elements = Array.isArray(data) ? data : data.elements || [];
       const excalidrawWrapper = React.createElement(
-        window.ExcalidrawLib.Excalidraw,
+        Excalidraw,
         {
           initialData: { elements },
-          isCollaborating: false,
           viewModeEnabled: true,
-          zenModeEnabled: false,
-          gridModeEnabled: false,
-          onPointerUpdate: () => {},
-          ref: (api) => { this.excalidrawAPI = api; }
+          ref: api => { this.excalidrawAPI = api; }
         }
       );
 
       ReactDOM.render(excalidrawWrapper, div);
       container.style.display = 'block';
-      
+
     } catch (error) {
       console.error('Excalidraw rendering error:', error);
       div.innerHTML = `<div style="padding:2rem;text-align:center;color:#64748b;">
@@ -180,7 +177,7 @@ class CreativeTools {
   async renderChart(data) {
     const container = document.getElementById('chartContainer');
     const canvas = document.getElementById('chartCanvas');
-    
+
     try {
       if (this.currentChart) this.currentChart.destroy();
       const chartConfig = typeof data === 'object' ? data : JSON.parse(data);
@@ -193,19 +190,10 @@ class CreativeTools {
           ...chartConfig.options,
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            ...chartConfig.options?.plugins,
-            legend: { labels: { color: '#1e293b' } }
-          },
-          scales: {
-            ...chartConfig.options?.scales,
-            y: { ...chartConfig.options?.scales?.y, ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } },
-            x: { ...chartConfig.options?.scales?.x, ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } }
-          }
         }
       });
       container.style.display = 'block';
-      
+
     } catch (error) {
       console.error('Chart rendering error:', error);
       throw new Error('Invalid chart data format');
@@ -230,7 +218,7 @@ class CreativeTools {
       link.href = canvas.toDataURL('image/png');
       link.click();
       this.showSuccess('Visualization downloaded successfully!');
-      
+
     } catch (error) {
       console.error('Download error:', error);
       this.showError('Failed to download visualization');
@@ -272,13 +260,17 @@ class CreativeTools {
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => { new CreativeTools(); });
 
-// Add React for Excalidraw
+// ✅ Подключаем React 18 и Excalidraw UMD
 if (!window.React) {
   const script1 = document.createElement('script');
-  script1.src = 'https://unpkg.com/react@17/umd/react.production.min.js';
+  script1.src = 'https://unpkg.com/react@18/umd/react.production.min.js';
   document.head.appendChild(script1);
-  
+
   const script2 = document.createElement('script');
-  script2.src = 'https://unpkg.com/react-dom@17/umd/react-dom.production.min.js';
+  script2.src = 'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js';
   document.head.appendChild(script2);
+
+  const script3 = document.createElement('script');
+  script3.src = 'https://unpkg.com/@excalidraw/excalidraw/dist/excalidraw.production.min.js';
+  document.head.appendChild(script3);
 }

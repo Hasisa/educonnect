@@ -22,10 +22,10 @@ router.post('/', async (req, res) => {
         result = await generateMindMap(topic);
         break;
       case 'diagram':
-        result = generateMockDiagram(topic); // diagram пока оставляем статичным
+        result = generateMockDiagram(topic);
         break;
       case 'chart':
-        result = generateMockChart(topic);   // chart пока оставляем статичным
+        result = generateMockChart(topic);
         break;
       default:
         throw new Error('Unknown type');
@@ -42,13 +42,14 @@ router.post('/', async (req, res) => {
 // Генерация осмысленной mindmap через OpenAI
 async function generateMindMap(topic) {
   const prompt = `
-Generate a detailed mindmap for the topic "${topic}".
-Use the following format:
+Generate a complete and detailed mindmap for someone to become a genius in "${topic}".
+- Include all key areas, subtopics, and meaningful details.
+- Use the following format:
 Branch: Main branch title
   Subtopic: Subtopic title
     Detail: One meaningful detail or explanation
-Include at least 3 branches, each with 2 subtopics and 2 details.
-Output only in plain text, do not add extra explanation.
+- Generate as many branches, subtopics, and details as necessary to cover the topic comprehensively.
+- Output only the text in the exact format above, without extra explanation or commentary.
 `;
 
   const response = await openai.chat.completions.create({
@@ -57,12 +58,11 @@ Output only in plain text, do not add extra explanation.
     temperature: 0.7,
   });
 
-  // Возвращаем текст ответа
   const text = response.choices[0].message.content.trim();
   return text;
 }
 
-// Mock Excalidraw diagram (оставляем пока статично)
+// Mock Excalidraw diagram
 function generateMockDiagram(topic) {
   return [
     { id: "1", type: "rectangle", x: 100, y: 100, width: 200, height: 100, backgroundColor: "#dbeafe", strokeColor: "#2563eb", strokeWidth: 2 },
@@ -70,7 +70,7 @@ function generateMockDiagram(topic) {
   ];
 }
 
-// Mock Chart.js data (оставляем пока статично)
+// Mock Chart.js data
 function generateMockChart(topic) {
   const categories = ['Category A','Category B','Category C','Category D','Category E'];
   const values = categories.map(() => Math.floor(Math.random() * 100) + 10);
