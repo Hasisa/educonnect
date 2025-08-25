@@ -18,7 +18,7 @@ class ChatService {
     this.unsubscribe = null;
 
     // ⚠ Токен больше не хранится на фронтенде!
-    this.SERVER_URL = 'https://school-forumforschool.onrender.com/api/ai'; // адрес локального сервера
+    this.SERVER_URL = 'https://school-forumforschool.onrender.com/api/ai'; // адрес сервера AI
   }
 
   async saveMessage(userId, message, type = 'user') {
@@ -48,10 +48,12 @@ class ChatService {
 
       this.unsubscribe = onSnapshot(q, (querySnapshot) => {
         const messages = [];
-        querySnapshot.forEach((doc) => {
-          messages.push({ id: doc.id, ...doc.data() });
+        querySnapshot.docChanges().forEach(change => {
+          if (change.type === "added") {
+            messages.push({ id: change.doc.id, ...change.doc.data() });
+          }
         });
-        callback(messages);
+        if (messages.length) callback(messages); // добавляем только новые сообщения
       });
 
       return this.unsubscribe;
@@ -82,27 +84,31 @@ class ChatService {
     }
   }
 
-  async sendToAI(message) {
-    try {
-      const response = await fetch(this.SERVER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }) // теперь поле message
-      });
+async sendToAI(message) {
+  try {
+    const response = await fetch(this.SERVER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message }) // сервер ожидает поле message
+    });
 
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(`Server error ${response.status}: ${text}`);
-      }
-
-      const data = await response.json();
-      return { success: true, response: data.reply || data }; // адаптируем под формат ответа
-    } catch (error) {
-      console.error('Error sending message to AI:', error);
-      return { success: false, error: `Не удалось обработать запрос к AI: ${error.message}` };
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`Server error ${response.status}: ${text}`);
     }
+
+    const data = await response.json();
+
+    // Берем только поле reply
+    const output = data.reply || "Нет ответа от AI";
+
+    return { success: true, response: output };
+  } catch (error) {
+    console.error('Error sending message to AI:', error);
+    return { success: false, error: `Не удалось обработать запрос к AI: ${error.message}` };
   }
 }
+}
 
-// ✅ Экспортируем экземпляр класса вне класса
+// ✅ Экспортируем экземпляр класса
 export default new ChatService();

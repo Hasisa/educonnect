@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Progress Tracker</title>
+    <link rel="stylesheet" href="progress.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Student Progress Tracker</h1>
+        </header>
+
+        <!-- Overall Progress -->
+        <section class="overall-progress">
+            <h3>Overall Progress</h3>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill overall" data-progress="0">
+                        <span class="progress-text">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-materials">0</span>
+                        <span class="stat-label">Materials</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-tests">0</span>
+                        <span class="stat-label">Tests</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-comments">0</span>
+                        <span class="stat-label">Comments</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">👍</div>
+                    <div class="stat-info">
+                        <span class="stat-number" id="total-likes">0</span>
+                        <span class="stat-label">Likes</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add New Subject -->
+        <section class="add-subject-section">
+            <div class="add-subject-card">
+                <h3>Add New Subject</h3>
+                <div class="form-group">
+                    <input type="text" id="subject-name" placeholder="Subject Name" required>
+                    <input type="text" id="subject-icon" placeholder="Icon (emoji)" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="materials-completed" placeholder="Materials Completed" min="0">
+                    <input type="number" id="materials-total" placeholder="Total Materials" min="1">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="tests-completed" placeholder="Tests Completed" min="0">
+                    <input type="number" id="tests-total" placeholder="Total Tests" min="1">
+                </div>
+                <div class="form-group">
+                    <input type="number" id="comments-count" placeholder="Comments" min="0">
+                    <input type="number" id="likes-count" placeholder="Likes" min="0">
+                </div>
+                <button onclick="addSubject()" class="add-btn">Add Subject</button>
+            </div>
+        </section>
+
+        <!-- Subject Progress -->
+        <section class="subjects-section">
+            <h3>Subject Progress</h3>
+            <div class="subjects-grid" id="subjects-container">
+                <!-- Subject cards will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Activity Chart -->
+        <section class="activity-section">
+            <h3>Weekly Activity</h3>
+            <div class="activity-chart">
+                <div class="chart-container">
+                    <div class="chart-bars" id="activity-chart">
+                        <!-- Chart bars will be populated by JavaScript -->
+                    </div>
+                    <div class="chart-labels">
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                        <span>Sun</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="progress.js"></script>
+</body>
+</html>

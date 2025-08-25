@@ -54,7 +54,7 @@ const schoolTools = [
     name: 'Progress Tracker',
     icon: '📊',
     description: 'Visualize personal progress and achievements.',
-    route: '/tools/progress'
+    route: '../progress/progress.html'
   },
   {
     id: 'resources',
