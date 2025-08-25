@@ -5,6 +5,7 @@ import aiRouter from "./registration-and-login/dashboard/aichat/server.js";
 import flashcardsRouter from "./registration-and-login/dashboard/flashcards/server.js";
 import quizRouter from "./registration-and-login/dashboard/quiz/server.js";
 import dictionaryRouter from "./registration-and-login/dashboard/dictionary/server.js";
+import generateRouter from "./registration-and-login/dashboard/creative/server.js"
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api/flashcards", flashcardsRouter);
 app.use("/api/quiz", quizRouter);
 app.use("/api/dictionary", dictionaryRouter);
+app.use("/api/generate", generateRouter);
 
 app.get("/", (req, res) => {
   res.send("✅ Server is running!");
