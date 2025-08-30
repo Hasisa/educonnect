@@ -1,9 +1,18 @@
 // generate/server.js
 import express from 'express';
+import cors from 'cors';
 import OpenAI from 'openai';
 
 const router = express.Router();
 router.use(express.json());
+
+// ⚡ Настройка CORS прямо здесь
+router.use(cors({
+  origin: 'https://educonnectforum.web.app',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Инициализация OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -40,16 +49,14 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Генерация осмысленной mindmap через OpenAI
+// Генерация mindmap
 async function generateMindMap(topic) {
   const prompt = `
 Generate a complete and detailed mindmap for someone to become a genius in "${topic}".
-- Include all key areas, subtopics, and meaningful details.
-- Use the following format:
 Branch: Main branch title
   Subtopic: Subtopic title
-    Detail: One meaningful detail or explanation
-- Output only the text in the exact format above, without extra explanation or commentary.
+    Detail: One meaningful detail
+Output only in this format.
 `;
 
   const response = await openai.chat.completions.create({
@@ -61,18 +68,11 @@ Branch: Main branch title
   return response.choices?.[0]?.message?.content?.trim() || '⚠️ No response from AI';
 }
 
-// Генерация diagram для Excalidraw
+// Генерация diagram
 async function generateDiagram(topic) {
   const prompt = `
 Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
-- Output valid JSON with rectangles, ellipses, arrows, and text elements.
-- Include positions, width, height, strokeColor, backgroundColor, text, fontSize.
-- Example output:
-[
-  { "id": "1", "type": "rectangle", "x": 100, "y": 100, "width": 200, "height": 100, "backgroundColor": "#dbeafe", "strokeColor": "#2563eb", "strokeWidth": 2 },
-  { "id": "2", "type": "text", "x": 150, "y": 135, "width": 100, "height": 30, "text": "Main Concept", "fontSize": 16, "textAlign": "center", "verticalAlign": "middle" }
-]
-- Output JSON only.
+Output valid JSON with rectangles, ellipses, arrows, and text elements.
 `;
 
   const response = await openai.chat.completions.create({
@@ -89,13 +89,11 @@ Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
   }
 }
 
-// Генерация chart для Chart.js
+// Генерация chart
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-- Include type, data (labels, datasets), options (responsive, plugins, scales).
-- Make it meaningful for the topic.
-- Output JSON only.
+Output JSON only.
 `;
 
   const response = await openai.chat.completions.create({
