@@ -9,12 +9,14 @@ import generateRouter from "./registration-and-login/dashboard/creative/server.j
 
 const app = express();
 
-app.use(cors({
+// Обработка preflight для всех маршрутов
+app.options("*", cors({
   origin: "https://educonnectforum.web.app",
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
 
 app.use(express.json());
 
