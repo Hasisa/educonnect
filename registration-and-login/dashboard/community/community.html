@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Перенёс выше для правильной кодировки -->
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community Profile - EduConnect</title>
 
@@ -30,8 +30,10 @@
                     <li><a href="../materials/materials.html" class="nav-link">Lesson Categories</a></li>
                     <li><a href="../communities/communities.html" class="nav-link">Communities</a></li>
                     <li><a href="../dashboard.html" class="nav-link">Dashboard</a></li>
+                    <li><a href="../tools/tools.html" class="nav-link">Tools</a></li>
                 </ul>
             </nav>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -89,63 +91,60 @@
                     </div>
 
                     <!-- Add Post Form -->
-                    <!-- Add Post Form -->
-<div class="add-post-container" id="addPostContainer" style="display: none;">
-    <form class="add-post-form" id="addPostForm">
-        <div class="form-group">
-            <label for="postContent" class="sr-only">Write your post</label>
-            <textarea 
-                id="postContent" 
-                class="post-textarea" 
-                placeholder="Share your thoughts with the community..."
-                rows="4"
-                required
-                aria-describedby="post-help"
-                maxlength="500"
-            ></textarea>
-            <div id="post-help" class="form-help">
-                <span class="char-count" id="charCount">0/500</span>
-            </div>
-        </div>
+                    <div class="add-post-container" id="addPostContainer" style="display: none;">
+                        <form class="add-post-form" id="addPostForm">
+                            <div class="form-group">
+                                <label for="postContent" class="sr-only">Write your post</label>
+                                <textarea 
+                                    id="postContent" 
+                                    class="post-textarea" 
+                                    placeholder="Share your thoughts with the community..."
+                                    rows="4"
+                                    required
+                                    aria-describedby="post-help"
+                                    maxlength="500"
+                                ></textarea>
+                                <div id="post-help" class="form-help">
+                                    <span class="char-count" id="charCount">0/500</span>
+                                </div>
+                            </div>
 
-        <!-- File Upload -->
-        <div class="form-group">
-            <label for="postDocument" class="custom-file-upload" tabindex="0" role="button" aria-label="Attach document">
-                <i class="fa-solid fa-upload" aria-hidden="true"></i> Attach document
-            </label>
-            <input 
-                type="file" 
-                id="postDocument" 
-                accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt"
-                aria-describedby="document-help"
-                style="display:none;"
-            />
-            <span id="selectedFileName" style="margin-left: 10px; font-size: 0.9em;"></span>
-        </div>
+                            <!-- File Upload -->
+                            <div class="form-group">
+                                <label for="postDocument" class="custom-file-upload" tabindex="0" role="button" aria-label="Attach document">
+                                    <i class="fa-solid fa-upload" aria-hidden="true"></i> Attach document
+                                </label>
+                                <input 
+                                    type="file" 
+                                    id="postDocument" 
+                                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+                                    aria-describedby="document-help"
+                                    style="display:none;"
+                                />
+                                <span id="selectedFileName" style="margin-left: 10px; font-size: 0.9em;"></span>
+                            </div>
 
-        <div class="form-actions">
-            <button type="button" class="btn btn-outline" id="cancelPostBtn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="submitPostBtn">
-                <i class="fa-solid fa-paper-plane"></i>
-                Post
-            </button>
-        </div>
-    </form>
-</div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" id="cancelPostBtn">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="submitPostBtn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    Post
+                                </button>
+                            </div>
+                        </form>
+                    </div>
 
-<script>
-    // Показываем выбранный файл рядом с кнопкой
-    const fileInput = document.getElementById('postDocument');
-    const fileNameSpan = document.getElementById('selectedFileName');
-
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            fileNameSpan.textContent = fileInput.files[0].name;
-        } else {
-            fileNameSpan.textContent = '';
-        }
-    });
-</script>
+                    <script>
+                        const fileInput = document.getElementById('postDocument');
+                        const fileNameSpan = document.getElementById('selectedFileName');
+                        fileInput.addEventListener('change', () => {
+                            if (fileInput.files.length > 0) {
+                                fileNameSpan.textContent = fileInput.files[0].name;
+                            } else {
+                                fileNameSpan.textContent = '';
+                            }
+                        });
+                    </script>
 
                     <!-- Login Prompt -->
                     <div class="login-prompt" id="loginPrompt" style="display: none;" role="alert" aria-live="assertive">
@@ -192,10 +191,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" defer></script>
 
-    
     <!-- Config & App Scripts -->
     <script src="firebase-config.js" defer></script>
     <script src="script.js" defer></script>
 </body>
 </html>
-

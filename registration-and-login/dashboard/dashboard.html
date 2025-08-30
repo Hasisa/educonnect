@@ -6,10 +6,7 @@
   <title>User Dashboard</title>
   <link rel="stylesheet" href="style2.css" />
   <style>
-    /* Твои стили + мелкие улучшения */
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none; }
     .loading-screen {
       display: flex;
       flex-direction: column;
@@ -28,9 +25,7 @@
       animation: spin 1s linear infinite;
       margin-bottom: 12px;
     }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .avatar-container {
       position: relative;
       width: 120px;
@@ -44,12 +39,7 @@
       font-size: 3rem;
       color: #555;
     }
-    .avatar {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+    .avatar { width: 100%; height: 100%; object-fit: cover; display: block; }
     .avatar-fallback {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -59,27 +49,11 @@
       background-color: #aaa;
       user-select: none;
     }
-    .btn {
-      padding: 8px 16px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background-color: #4f46e5;
-      color: white;
-    }
-    .save-status {
-      margin-top: 8px;
-      font-weight: 600;
-    }
-    .save-status.success {
-      color: green;
-    }
-    .save-status.error {
-      color: red;
-    }
+    .btn { padding: 8px 16px; font-size: 1rem; border: none; border-radius: 4px; cursor: pointer; }
+    .btn-primary { background-color: #4f46e5; color: white; }
+    .save-status { margin-top: 8px; font-weight: 600; }
+    .save-status.success { color: green; }
+    .save-status.error { color: red; }
     #search-results {
       margin-top: 10px;
       max-height: 250px;
@@ -96,30 +70,14 @@
       align-items: center;
       gap: 8px;
     }
-    #search-results div:hover {
-      background-color: #e0e0ff;
-    }
+    #search-results div:hover { background-color: #e0e0ff; }
     .search-avatar-fallback {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #aaa;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 1.1rem;
-      user-select: none;
-      flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 50%;
+      background-color: #aaa; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 1.1rem; user-select: none; flex-shrink: 0;
     }
-    .search-avatar-img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
+    .search-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -175,28 +133,73 @@
               <div class="profile-info">
                 <div class="info-group">
                   <label>Full Name</label>
-                  <div class="full-name">
-                    <span id="user-fullname">Loading...</span>
-                  </div>
+                  <div class="full-name"><span id="user-fullname">Loading...</span></div>
                 </div>
                 <div class="info-group">
                   <label>Email</label>
-                  <div class="email-display">
-                    <span id="user-email">Loading...</span>
+                  <div class="email-display"><span id="user-email">Loading...</span></div>
+                </div>
+
+                <div class="info-group">
+                  <label>Class</label>
+                  <div class="select-container">
+                    <select id="user-class" class="select-input">
+                      <option value="">Select your class...</option>
+                      <option value="freshman">Freshman</option>
+                      <option value="sophomore">Sophomore</option>
+                      <option value="junior">Junior</option>
+                      <option value="senior">Senior</option>
+                      <option value="graduate">Graduate</option>
+                      <option value="faculty">Faculty</option>
+                    </select>
                   </div>
                 </div>
+                
+                <div class="info-group">
+                  <label>Clubs (Select up to 2)</label>
+                  <div class="clubs-container">
+                    <div class="select-container">
+                      <select id="user-club1" class="select-input">
+                        <option value="">Select first club...</option>
+                        <option value="debate">Debate Club</option>
+                        <option value="chess">Chess Club</option>
+                        <option value="drama">Drama Club</option>
+                        <option value="music">Music Club</option>
+                        <option value="art">Art Club</option>
+                        <option value="science">Science Club</option>
+                        <option value="robotics">Robotics Club</option>
+                        <option value="photography">Photography Club</option>
+                        <option value="writing">Writing Club</option>
+                        <option value="volunteer">Volunteer Club</option>
+                        <option value="sports">Sports Club</option>
+                        <option value="coding">Coding Club</option>
+                      </select>
+                    </div>
+                    <div class="select-container">
+                      <select id="user-club2" class="select-input">
+                        <option value="">Select second club...</option>
+                        <option value="debate">Debate Club</option>
+                        <option value="chess">Chess Club</option>
+                        <option value="drama">Drama Club</option>
+                        <option value="music">Music Club</option>
+                        <option value="art">Art Club</option>
+                        <option value="science">Science Club</option>
+                        <option value="robotics">Robotics Club</option>
+                        <option value="photography">Photography Club</option>
+                        <option value="writing">Writing Club</option>
+                        <option value="volunteer">Volunteer Club</option>
+                        <option value="sports">Sports Club</option>
+                        <option value="coding">Coding Club</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
                 <div class="info-group">
                   <label>Description</label>
                   <div class="description-container">
-                    <textarea
-                      id="user-description"
-                      class="description-input"
-                      placeholder="Tell us about yourself..."
-                      rows="4"
-                    ></textarea>
-                    <button id="save-description-btn" class="btn btn-primary save-btn">
-                      Save Description
-                    </button>
+                    <textarea id="user-description" class="description-input" placeholder="Tell us about yourself..." rows="4"></textarea>
+                    <button id="save-description-btn" class="btn btn-primary save-btn">Save</button>
                   </div>
                 </div>
               </div>
@@ -207,89 +210,89 @@
     </main>
   </div>
 
-  <!-- Firebase SDK (compat версия) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
   <script>
-  // === Инициализация Firebase ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyCkU8o1vz4Tmo0yVRFrlq2_1_eDfI_GPaA",
-    authDomain: "educonnect-958e2.firebaseapp.com",
-    projectId: "educonnect-958e2",
-    storageBucket: "educonnect-958e2.firebasestorage.com",
-    messagingSenderId: "1044066506835",
-    appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6",
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCkU8o1vz4Tmo0yVRFrlq2_1_eDfI_GPaA",
+      authDomain: "educonnect-958e2.firebaseapp.com",
+      projectId: "educonnect-958e2",
+      storageBucket: "educonnect-958e2.firebasestorage.com",
+      messagingSenderId: "1044066506835",
+      appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6",
+    };
 
-  firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-  // === DOM элементы ===
-  const loadingScreen = document.getElementById('loading-screen');
-  const dashboard = document.getElementById('dashboard');
+    const loadingScreen = document.getElementById('loading-screen');
+    const dashboard = document.getElementById('dashboard');
+    const userFullName = document.getElementById('user-fullname');
+    const userEmail = document.getElementById('user-email');
+    const userAvatarImg = document.getElementById('user-avatar');
+    const avatarFallback = document.getElementById('avatar-fallback');
+    const avatarInitials = document.getElementById('avatar-initials');
+    const descriptionInput = document.getElementById('user-description');
+    const saveBtn = document.getElementById('save-description-btn');
+    const classSelect = document.getElementById('user-class');
+    const club1Select = document.getElementById('user-club1');
+    const club2Select = document.getElementById('user-club2');
+    const searchInput = document.querySelector('.search-input');
+    const searchResults = document.getElementById('search-results');
+    const saveStatus = document.getElementById('save-status');
 
-  const userFullName = document.getElementById('user-fullname');
-  const userEmail = document.getElementById('user-email');
-  const userAvatarImg = document.getElementById('user-avatar');
-  const avatarFallback = document.getElementById('avatar-fallback');
-  const avatarInitials = document.getElementById('avatar-initials');
+    let currentUser = null;
+    let searchTimeout = null;
 
-  const descriptionInput = document.getElementById('user-description');
-  const saveBtn = document.getElementById('save-description-btn');
-  const saveStatus = document.getElementById('save-status');
+    function getUidFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('uid');
+    }
 
-  const searchInput = document.querySelector('.search-input');
-  const searchResults = document.getElementById('search-results');
+    function getInitials(name) {
+      const parts = name.trim().split(' ');
+      return parts.length === 1 ? parts[0][0].toUpperCase() : (parts[0][0] + parts[1][0]).toUpperCase();
+    }
 
-  let currentUser = null;
-  let searchTimeout = null;
-
-  // === Получение uid из URL ===
-  function getUidFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('uid');
-  }
-
-  // === Получение инициалов для fallback аватара ===
-  function getInitials(name) {
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
-  // === Загрузка данных пользователя ===
-  async function loadUserData(uidFromUrl) {
-    if (!currentUser) return;
-
-    const uid = uidFromUrl || currentUser.uid;
-
-    // Сброс интерфейса
-    userEmail.textContent = '';
-    userFullName.textContent = 'Loading...';
-    descriptionInput.value = '';
-    userAvatarImg.style.display = 'none';
-    avatarFallback.style.display = 'flex';
-    avatarInitials.textContent = '';
-    saveStatus.classList.add('hidden');
-    saveStatus.textContent = '';
-
-    try {
-      const docSnap = await db.collection('users').doc(uid).get();
+    async function createUserIfNotExists(uid, user) {
+      const docRef = db.collection('users').doc(uid);
+      const docSnap = await docRef.get();
       if (!docSnap.exists) {
-        userFullName.textContent = "User not found";
-        descriptionInput.disabled = true;
-        saveBtn.style.display = 'none';
-        return;
+        await docRef.set({
+          firstName: user.displayName ? user.displayName.split(' ')[0] : '',
+          lastName: user.displayName ? user.displayName.split(' ')[1] || '' : '',
+          email: user.email || '',
+          avatarUrl: user.photoURL || '',
+          description: '',
+          userClass: '',
+          club1: '',
+          club2: '',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
       }
+    }
 
+    async function loadUserData(uidFromUrl) {
+      if (!currentUser) return;
+      const uid = uidFromUrl || currentUser.uid;
+
+      await createUserIfNotExists(uid, currentUser);
+
+      const docSnap = await db.collection('users').doc(uid).get();
       const data = docSnap.data();
-      const fullName = (data.firstName && data.lastName) ? `${data.firstName} ${data.lastName}` : (currentUser.displayName || "No Name");
+
+      const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'No Name';
       userFullName.textContent = fullName;
-      descriptionInput.value = data.description || "";
+      userEmail.textContent = data.email || 'No Email';
+      descriptionInput.value = data.description || '';
+      classSelect.value = data.userClass || '';
+      club1Select.value = data.club1 || '';
+      club2Select.value = data.club2 || '';
 
       if (data.avatarUrl) {
         userAvatarImg.src = data.avatarUrl;
@@ -301,143 +304,105 @@
         avatarInitials.textContent = getInitials(fullName);
       }
 
-      userEmail.textContent = data.email || 'No Email';
-
-      // Если это чужой профиль - блокируем редактирование
-      if (uid !== currentUser.uid) {
-        descriptionInput.disabled = true;
-        saveBtn.style.display = 'none';
-      } else {
-        descriptionInput.disabled = false;
-        saveBtn.style.display = 'inline-block';
-      }
+      const canEdit = uid === currentUser.uid;
+      descriptionInput.disabled = !canEdit;
+      saveBtn.style.display = canEdit ? 'inline-block' : 'none';
+      classSelect.disabled = !canEdit;
+      club1Select.disabled = !canEdit;
+      club2Select.disabled = !canEdit;
 
       loadingScreen.style.display = 'none';
       dashboard.classList.remove('hidden');
-
-    } catch (error) {
-      console.error("Error loading user data:", error);
-      userFullName.textContent = "Error loading user";
-      descriptionInput.disabled = true;
-      saveBtn.style.display = 'none';
-    }
-  }
-
-  // === Сохранение описания только для своего профиля ===
-  saveBtn.addEventListener('click', () => {
-    const uidFromUrl = getUidFromUrl();
-    if (!currentUser || uidFromUrl !== currentUser.uid) {
-      saveStatus.textContent = "You cannot edit this profile";
-      saveStatus.className = "save-status error";
-      saveStatus.classList.remove('hidden');
-      return;
     }
 
-    const newDescription = descriptionInput.value.trim();
+    function saveUserData() {
+      if (!currentUser) return;
+      const uid = currentUser.uid;
 
-    saveStatus.textContent = "Saving...";
-    saveStatus.className = "save-status";
-    saveStatus.classList.remove('hidden');
-
-    db.collection('users').doc(currentUser.uid).set({
-      description: newDescription
-    }, { merge: true })
-    .then(() => {
-      saveStatus.textContent = "Description saved successfully!";
-      saveStatus.className = "save-status success";
-    })
-    .catch((error) => {
-      saveStatus.textContent = "Error saving description: " + error.message;
-      saveStatus.className = "save-status error";
-      console.error("Error saving description:", error);
-    });
-  });
-
-  // === Поиск пользователей с дебаунсом ===
-  async function searchUsersByName(name) {
-    if (!name) {
-      searchResults.innerHTML = '';
-      return;
+      db.collection('users').doc(uid).set({
+        description: descriptionInput.value.trim(),
+        userClass: classSelect.value,
+        club1: club1Select.value,
+        club2: club2Select.value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true })
+      .then(() => {
+        saveStatus.textContent = "Profile saved!";
+        saveStatus.className = "save-status success";
+        saveStatus.classList.remove('hidden');
+        setTimeout(() => saveStatus.classList.add('hidden'), 2000);
+      })
+      .catch(err => {
+        saveStatus.textContent = "Error saving profile";
+        saveStatus.className = "save-status error";
+        saveStatus.classList.remove('hidden');
+        console.error(err);
+      });
     }
 
-    try {
-      const usersRef = db.collection('users');
-      const queryRef = usersRef
-        .orderBy('firstName')
-        .startAt(name)
-        .endAt(name + '\uf8ff')
-        .limit(10);
+    saveBtn.addEventListener('click', saveUserData);
+    classSelect.addEventListener('change', saveUserData);
+    club1Select.addEventListener('change', saveUserData);
+    club2Select.addEventListener('change', saveUserData);
 
-      const snapshot = await queryRef.get();
-
-      if (snapshot.empty) {
-        searchResults.innerHTML = '<div style="padding:8px;">No users found</div>';
+    async function searchUsersByName(name) {
+      if (!name) {
+        searchResults.innerHTML = '';
         return;
       }
+      try {
+        const usersRef = db.collection('users');
+        const queryRef = usersRef.orderBy('firstName').startAt(name).endAt(name + '\uf8ff').limit(10);
+        const snapshot = await queryRef.get();
 
-      let html = '';
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Unnamed User';
-        const email = data.email || '';
-        const avatarUrl = data.avatarUrl || '';
-
-        if (avatarUrl) {
-          html += `
-            <div data-uid="${doc.id}">
-              <img src="${avatarUrl}" alt="Avatar" class="search-avatar-img" />
-              <div>
-                <strong>${fullName}</strong><br />
-                <small>${email}</small>
-              </div>
-            </div>
-          `;
-        } else {
-          const initials = getInitials(fullName);
-          html += `
-            <div data-uid="${doc.id}">
-              <div class="search-avatar-fallback">${initials}</div>
-              <div>
-                <strong>${fullName}</strong><br />
-                <small>${email}</small>
-              </div>
-            </div>
-          `;
+        if (snapshot.empty) {
+          searchResults.innerHTML = '<div style="padding:8px;">No users found</div>';
+          return;
         }
-      });
 
-      searchResults.innerHTML = html;
+        let html = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Unnamed User';
+          const email = data.email || '';
+          const avatarUrl = data.avatarUrl || '';
 
-      searchResults.querySelectorAll('div[data-uid]').forEach(item => {
-        item.addEventListener('click', () => {
-          const uid = item.getAttribute('data-uid');
-          window.location.href = `dashboard.html?uid=${uid}`;
+          if (avatarUrl) {
+            html += `<div data-uid="${doc.id}"><img src="${avatarUrl}" class="search-avatar-img" /><div><strong>${fullName}</strong><br/><small>${email}</small></div></div>`;
+          } else {
+            const initials = getInitials(fullName);
+            html += `<div data-uid="${doc.id}"><div class="search-avatar-fallback">${initials}</div><div><strong>${fullName}</strong><br/><small>${email}</small></div></div>`;
+          }
         });
-      });
 
-    } catch (error) {
-      console.error('Search error:', error);
-      searchResults.innerHTML = '<div style="padding:8px;">Error searching users</div>';
+        searchResults.innerHTML = html;
+        searchResults.querySelectorAll('div[data-uid]').forEach(item => {
+          item.addEventListener('click', () => {
+            const uid = item.getAttribute('data-uid');
+            window.location.href = `dashboard.html?uid=${uid}`;
+          });
+        });
+
+      } catch (error) {
+        console.error('Search error:', error);
+        searchResults.innerHTML = '<div style="padding:8px;">Error searching users</div>';
+      }
     }
-  }
 
-  // === Обработчик ввода поиска с дебаунсом ===
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.trim();
-    if (searchTimeout) clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-      searchUsersByName(query);
-    }, 300);
-  });
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim();
+      if (searchTimeout) clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => searchUsersByName(query), 300);
+    });
 
-  // === Проверка авторизации и загрузка данных ===
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      const uidFromUrl = getUidFromUrl();
-      loadUserData(uidFromUrl);
-    } else {
-      loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
-    }
-  });
-</script>
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadUserData(getUidFromUrl());
+      } else {
+        loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
+      }
+    });
+  </script>
+</body>
+</html>

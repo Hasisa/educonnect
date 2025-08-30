@@ -461,6 +461,7 @@
                 <a href="../materials/materials.html" class="nav-link">Lesson Categories</a>
                 <a href="../communities/communities.html" class="nav-link active">Communities</a>
                 <a href="../dashboard.html" class="nav-link">Dashboard</a>
+                 <a href="../tools/tools.html" class="nav-link">Tools</a>
             </nav>
 
             <div class="search-container">
@@ -636,12 +637,12 @@ const firebaseConfig = {
     appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6",
 };
 
-// Инициализация
+// Init
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// DOM элементы
+// DOM
 const loadingContainer = document.getElementById('loadingContainer');
 const communitiesContainer = document.getElementById('communitiesContainer');
 const emptyState = document.getElementById('emptyState');
@@ -668,7 +669,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Генерация инициалов
 function getInitials(name) {
     const parts = name.trim().split(' ');
     if (parts.length === 1) return parts[0][0]?.toUpperCase() || 'U';
@@ -706,8 +706,8 @@ function showCommunities() {
 
 function getTypeClass(type) {
     switch (type) {
-        case '10th Grade': return 'grade-10';
-        case '11th Grade': return 'grade-11';
+        case '10th grader': return 'grade-10';
+        case '11th grader': return 'grade-11';
         case 'General': return 'general';
         default: return '';
     }
@@ -730,7 +730,13 @@ function renderCommunities(communities) {
                         </a>
                     </h2>
                     <span class="community-type ${getTypeClass(c.type)}">
-                        ${escapeHtml(c.type)}
+                        ${escapeHtml(
+                            c.type === '10th grader'
+                                ? '10 graders'
+                                : c.type === '11th grader'
+                                ? '11 graders'
+                                : 'General'
+                        )}
                     </span>
                 </div>
                 <p class="community-description">${escapeHtml(c.description)}</p>
@@ -787,7 +793,9 @@ function renderCommunities(communities) {
 
 function filterCommunities() {
     let filtered = allCommunities;
-    if (currentFilter !== 'all') filtered = filtered.filter(c => c.type === currentFilter);
+    if (currentFilter !== 'all') {
+        filtered = filtered.filter(c => c.type === currentFilter);
+    }
     if (communitySearchTerm.trim()) {
         const term = communitySearchTerm.toLowerCase();
         filtered = filtered.filter(c =>
@@ -883,6 +891,7 @@ function filterHeaderUsers(term) {
     });
 }
 
+// Фильтры
 // Фильтры сообществ
 filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -892,10 +901,22 @@ filterButtons.forEach(btn => {
         });
         btn.classList.add('active');
         btn.setAttribute('aria-pressed', 'true');
-        currentFilter = btn.dataset.filter;
+
+        // Привязываем dataset к Firestore полю type
+        if (btn.dataset.filter === '10th Grade') {
+            currentFilter = '10th grader';
+        } else if (btn.dataset.filter === '11th Grade') {
+            currentFilter = '11th grader';
+        } else if (btn.dataset.filter === 'General') {
+            currentFilter = 'General';
+        } else {
+            currentFilter = 'all';
+        }
+
         filterCommunities();
     });
 });
+
 
 communitySearchInput.addEventListener('input', e => {
     communitySearchTerm = e.target.value;

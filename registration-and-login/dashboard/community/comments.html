@@ -18,6 +18,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <style>
+    /* --- Общие стили --- */
     .post-actions, .comment-actions {
       display: flex;
       gap: 16px;
@@ -28,21 +29,18 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      background: none;
-      border: 2px solid #d1d5db;
-      cursor: pointer;
-      color: #6b7280;
-      font-size: 16px;
       padding: 6px 12px;
       border-radius: 8px;
-      transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
-      user-select: none;
-      font-weight: 500;
+      font-size: 14px;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: none;
+      border: none;
     }
 
     .post-action i {
       font-size: 18px;
-      vertical-align: middle;
       color: inherit;
       transition: transform 0.2s ease;
     }
@@ -53,14 +51,13 @@
       transform: translateY(-1px);
     }
 
-    .post-action.liked {
-      border-color: #ef4444;
-      color: #ef4444;
+    .post-action.like-btn.liked,
+    .post-action.like-btn[aria-pressed="true"] {
+      color: #808080;
     }
 
-    .post-action.liked:hover {
-      background-color: #fee2e2;
-      color: #b91c1c;
+    .post-action.reply-btn:hover {
+      color: #808080;
     }
 
     .comment {
@@ -113,29 +110,59 @@
       color: #374151;
     }
 
-    /* Скрыть модалку по умолчанию */
     .modal.hidden {
       display: none;
     }
 
-    /* --- Новый блок: пост attachments --- */
+    /* --- Вложения --- */
     .post-attachments {
       margin: 12px 0;
-      padding: 8px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .post-image {
+      max-width: 700px;
+      max-height: 600px;
+      width: 100%;
+      height: auto;
       border-radius: 8px;
+      object-fit: cover;
     }
 
-    .post-attachments a {
-      display: block;
-      color: #3b82f6;
-      text-decoration: none;
-      margin-bottom: 4px;
+    .post-attachment {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background-color: #f3f4f6;
+      font-size: 14px;
+      color: #374151;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    .post-attachments a:hover {
-      text-decoration: underline;
+    .post-attachment:hover {
+      background-color: #3b82f6;
+      color: #ffffff;
+    }
+
+    .download-btn {
+      background-color: #3b82f6;
+      color: #ffffff;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .download-btn:hover {
+      background-color: #2563eb;
     }
   </style>
 </head>
@@ -156,6 +183,7 @@
         <button id="retry-btn" class="retry-btn">Retry</button>
       </div>
 
+      <!-- --- ПОСТ --- -->
       <article id="post" class="post hidden">
         <div class="post-header">
           <div class="post-author">
@@ -171,22 +199,42 @@
           <p id="post-text">Loading...</p>
         </div>
 
-        <!-- Новый блок: attachments поста -->
-        <div id="post-attachments" class="post-attachments"></div>
+        <!-- Вложения -->
+        <div id="post-attachments" class="post-attachments">
+          <!-- Пример изображения -->
+          <!-- <img class="post-image" src="https://example.com/photo.jpg" alt="Post image"> -->
 
+          <!-- Пример файла -->
+          <!--
+          <div class="post-attachment">
+            <span>Document.pdf</span>
+            <button class="download-btn" onclick="window.open('https://example.com/document.pdf', '_blank')">Download</button>
+          </div>
+          -->
+        </div>
+
+        <!-- Действия -->
         <div class="post-actions">
-          <button id="post-like-btn" class="post-action" data-action="like">
+          <button 
+            id="post-like-btn" 
+            class="post-action like-btn" 
+            data-action="like" 
+            aria-pressed="false">
             <i class="far fa-heart"></i>
             <span id="post-like-count">0</span>
           </button>
 
-          <button id="post-reply-btn" class="post-action" data-action="reply">
+          <button 
+            id="post-reply-btn" 
+            class="post-action reply-btn" 
+            data-action="reply">
             <i class="far fa-comment"></i>
             <span>Reply</span>
           </button>
         </div>
       </article>
 
+      <!-- --- Комментарии --- -->
       <section class="comments-section">
         <h3 class="comments-title">Comments</h3>
 
@@ -204,6 +252,7 @@
     </main>
   </div>
 
+  <!-- --- Модалка для ответа --- -->
   <div id="reply-modal" class="modal hidden">
     <div class="modal-content">
       <div class="modal-header">

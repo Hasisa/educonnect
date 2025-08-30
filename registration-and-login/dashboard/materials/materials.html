@@ -6,7 +6,7 @@
     <title>Lesson Categories - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
+         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -20,14 +20,15 @@
             min-height: 100vh;
         }
 
-        /* Header Styles */
+        /* Header Styles - Заменено на запомненные строки */
         .header {
             position: sticky;
             top: 0;
-            background-color: white;
+            background-color: #fff;
             border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             z-index: 1000;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .header-container {
@@ -51,21 +52,20 @@
             display: flex;
             gap: 32px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .nav-link {
+            position: relative;
             text-decoration: none;
             font-weight: 500;
-            color: #666;
+            color: #6b7280;
             padding-bottom: 4px;
             transition: all 0.2s ease;
-            position: relative;
+            white-space: nowrap;
         }
 
-        .nav-link:hover {
-            color: #3b82f6;
-        }
-
+        .nav-link:hover,
         .nav-link.active {
             color: #3b82f6;
         }
@@ -73,32 +73,34 @@
         .nav-link.active::after {
             content: '';
             position: absolute;
-            bottom: -16px;
+            bottom: -8px;
             left: 0;
             right: 0;
             height: 2px;
             background-color: #3b82f6;
+            border-radius: 9999px;
         }
 
+        /* Search Users */
         .search-container {
             position: relative;
-            width: 280px;
+            width: 240px;
         }
 
         .search-input {
             width: 100%;
-            padding: 10px 12px 10px 40px;
+            padding: 10px 12px 10px 36px;
             border: 1px solid #d1d5db;
-            border-radius: 8px;
+            border-radius: 0.375rem;
             font-size: 14px;
             background-color: #fff;
-            transition: all 0.2s ease;
+            color: #111827;
         }
 
         .search-input:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: -1px;
+            outline: none;
             border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .search-input::placeholder {
@@ -107,13 +109,199 @@
 
         .search-icon {
             position: absolute;
-            left: 12px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: #9ca3af;
-            width: 16px;
-            height: 16px;
+            pointer-events: none;
+            width: 18px;
+            height: 18px;
         }
+        /* User Search Results */
+.header-user-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-user-item:hover {
+    background-color: #f1f5f9;
+}
+
+.header-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e2e8f0;
+    flex-shrink: 0;
+}
+
+.header-user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.header-user-initials {
+    font-weight: 700;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.header-user-info {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    align-items: center;
+}
+
+.header-user-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.header-user-email {
+    font-size: 12px;
+    color: #64748b;
+}
+
+        /* Остальные стили остались без изменений */
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #3b82f6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            background-color: white;
+            color: #64748b;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .category-search {
+            position: relative;
+            width: 320px;
+        }
+
+        .category-search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        .category-search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .category-search .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 18px;
+            height: 18px;
+        }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .nav {
+        justify-content: center;
+        gap: 24px;
+    }
+
+    .search-container,
+    .category-search {
+        width: 100%;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .filter-buttons {
+        justify-content: center;
+    }
+}
 
         /* Main Content */
         .main-content {
@@ -587,55 +775,7 @@
                 gap: 16px;
             }
         }
-        .header-search-results .header-user-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.header-search-results .header-user-item:hover {
-    background: #f1f5f9;
-}
-
-.header-search-results .header-user-avatar img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.header-user-info {
-    display: flex;
-    align-items: center;
-    gap: 16px; /* Расстояние между именем и email */
-}
-
-.header-user-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: #1e293b;
-}
-
-.header-user-email {
-    font-size: 12px;
-    color: #64748b;
-}
-.header-user-initials {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: #3b82f6;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
-}
+        
 
 
     </style>
@@ -651,15 +791,34 @@
                 <a href="materials.html" class="nav-link active">Lesson Categories</a>
                 <a href="../communities/communities.html" class="nav-link">Communities</a>
                 <a href="../dashboard.html" class="nav-link">Dashboard</a>
+                <a href="../tools/tools.html" class="nav-link">Tools</a>
             </nav>
             
-            <div class="search-container">
-                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <input type="text" class="search-input" placeholder="Search users..." aria-label="Search users">
-            </div>
-            <div id="categorySearchResults" class="header-search-results" style="display: none; position: absolute; top: 50px; left: 0; width: 100%; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; max-height: 300px; overflow-y: auto;"></div>
+<div class="search-container">
+    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+    </svg>
+    <input type="text" class="search-input" placeholder="Search users..." aria-label="Search users">
+</div>
+
+<div id="categorySearchResults" class="header-search-results" style="
+    display: none;
+    position: absolute;
+    top: 72px; /* расстояние от шапки */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1200px; /* можно менять */
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 999;
+"></div>
+
+</div>
+
 
         </div>
     </header>
@@ -675,8 +834,8 @@
         <div class="filter-controls">
             <div class="filter-buttons" role="group" aria-label="Category level filters">
                 <button class="filter-btn active" data-filter="all" aria-pressed="true">All Lessons</button>
-                <button class="filter-btn" data-filter="Beginner" aria-pressed="false">10th graders</button>
-                <button class="filter-btn" data-filter="Intermediate" aria-pressed="false">11th graders</button>
+                <button class="filter-btn" data-filter="10th graders" aria-pressed="false">10th graders</button>
+                <button class="filter-btn" data-filter="11th graders" aria-pressed="false">11th graders</button>
                 <button class="filter-btn" data-filter="Advanced" aria-pressed="false">Clubs</button>
             </div>
             
@@ -751,7 +910,7 @@ let currentFilter = 'all';
 let searchTerm = '';
 let allUsers = [];
 
-// --- Loading / UI helpers ---
+// --- UI helpers ---
 function showLoading() {
     loadingContainer.style.display = 'flex';
     categoriesContainer.style.display = 'none';
@@ -783,29 +942,29 @@ function showCategories() {
     if (errorContainer) errorContainer.style.display = 'none';
 }
 
-// --- Helpers for rendering categories ---
+// --- Helpers ---
 function getCategoryIcon(subject) {
     const icons = {
-        'Mathematics': '📐', 'Science': '🔬', 'Physics': '⚛️', 'Chemistry': '🧪', 'Biology': '🧬',
-        'English': '📚', 'Literature': '📖', 'History': '🏛️', 'Geography': '🌍', 'Art': '🎨',
-        'Music': '🎵', 'Technology': '💻', 'Programming': '👨‍💻', 'Economics': '📊',
-        'Philosophy': '🤔', 'Psychology': '🧠'
+        'mathematics': '📐', 'science': '🔬', 'physics': '⚛️', 'chemistry': '🧪', 'biology': '🧬',
+        'english': '📚', 'literature': '📖', 'history': '🏛️', 'geography': '🌍', 'art': '🎨',
+        'music': '🎵', 'technology': '💻', 'programming': '👨‍💻', 'economics': '📊',
+        'philosophy': '🤔', 'psychology': '🧠'
     };
-    return icons[subject] || '📚';
+    return icons[subject.toLowerCase()] || '📚';
 }
 
 function getIconClass(subject) {
     const classes = {
-        'Mathematics': 'math', 'Physics': 'science', 'Chemistry': 'science', 'Biology': 'science',
-        'Science': 'science', 'English': 'language', 'Literature': 'language', 'History': 'history',
-        'Geography': 'history', 'Art': 'arts', 'Music': 'arts', 'Technology': 'technology',
-        'Programming': 'technology', 'Economics': 'math', 'Philosophy': 'history', 'Psychology': 'science'
+        'mathematics': 'math', 'physics': 'science', 'chemistry': 'science', 'biology': 'science',
+        'science': 'science', 'english': 'language', 'literature': 'language', 'history': 'history',
+        'geography': 'history', 'art': 'arts', 'music': 'arts', 'technology': 'technology',
+        'programming': 'technology', 'economics': 'math', 'philosophy': 'history', 'psychology': 'science'
     };
-    return classes[subject] || 'math';
+    return classes[subject.toLowerCase()] || 'math';
 }
 
 function getLevelClass(type) {
-    return type.toLowerCase().replace(/\s+/g, '-');
+    return (type || '').toLowerCase().replace(/\s+/g, '-');
 }
 
 function escapeHtml(text) {
@@ -857,20 +1016,25 @@ function renderCategories(categories) {
 // --- Filter categories ---
 function filterCategories() {
     let filtered = allCategories;
-    if (currentFilter !== 'all') filtered = filtered.filter(c => c.type === currentFilter);
+
+    if (currentFilter !== 'all') {
+        filtered = filtered.filter(c => (c.type || '').toLowerCase().includes(currentFilter.toLowerCase()));
+    }
+
     if (searchTerm.trim()) {
-        const searchLower = searchTerm.toLowerCase().trim();
+        const term = searchTerm.toLowerCase().trim();
         filtered = filtered.filter(c =>
-            c.name.toLowerCase().includes(searchLower) ||
-            c.description.toLowerCase().includes(searchLower) ||
-            c.subject.toLowerCase().includes(searchLower)
+            (c.name && c.name.toLowerCase().includes(term)) ||
+            (c.description && c.description.toLowerCase().includes(term)) ||
+            (c.subject && c.subject.toLowerCase().includes(term))
         );
     }
+
     filteredCategories = filtered;
     renderCategories(filteredCategories);
 }
 
-// --- Load lesson categories with materials count ---
+// --- Load categories ---
 async function loadCategories() {
     showLoading();
     try {
@@ -881,14 +1045,14 @@ async function loadCategories() {
         const categories = await Promise.all(snapshot.docs.map(async doc => {
             const data = doc.data();
 
-            // Получаем количество материалов из подколлекции study-materials
             const materialsRef = collection(db, 'lesson-categories', doc.id, 'study-materials');
             const materialsSnapshot = await getDocs(materialsRef);
 
             return {
                 id: doc.id,
                 ...data,
-                materialsCount: materialsSnapshot.size // количество материалов
+                materialsCount: materialsSnapshot.size,
+                membersCount: data.membersCount || 0
             };
         }));
 
@@ -906,7 +1070,7 @@ filterButtons.forEach(button => {
         filterButtons.forEach(btn => { btn.classList.remove('active'); btn.setAttribute('aria-pressed','false'); });
         button.classList.add('active');
         button.setAttribute('aria-pressed','true');
-        currentFilter = button.dataset.filter;
+        currentFilter = button.dataset.filter || 'all';
         filterCategories();
     });
 });
@@ -928,11 +1092,12 @@ async function loadUsers() {
         const usersRef = collection(db, 'users');
         const snapshot = await getDocs(usersRef);
         allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (err) { console.error('Failed to load users:', err); }
+    } catch (err) {
+        console.error('Failed to load users:', err);
+    }
 }
 
-// --- Render user search results ---
-// --- Render user search results ---
+// --- Render user results ---
 function renderUserResults(users) {
     if (!users.length) {
         searchResultsContainer.innerHTML = '<p style="padding:12px;color:#64748b;">No users found</p>';
@@ -942,7 +1107,7 @@ function renderUserResults(users) {
 
     searchResultsContainer.innerHTML = users.map(user => {
         const initials = `${user.firstName ? user.firstName[0] : ''}${user.lastName ? user.lastName[0] : ''}`.toUpperCase();
-        const avatarHtml = user.avatarUrl 
+        const avatarHtml = user.avatarUrl
             ? `<img src="${user.avatarUrl}" alt="${user.firstName || ''} ${user.lastName || ''}">`
             : `<div class="header-user-initials">${initials}</div>`;
         return `
@@ -967,7 +1132,10 @@ window.openUserDashboard = function(userId) {
 // --- Handle user search input ---
 userSearchInput.addEventListener('input', e => {
     const term = e.target.value.toLowerCase().trim();
-    if (!term) { searchResultsContainer.style.display = 'none'; return; }
+    if (!term) {
+        searchResultsContainer.style.display = 'none';
+        return;
+    }
     const results = allUsers.filter(user =>
         (user.firstName && user.firstName.toLowerCase().includes(term)) ||
         (user.lastName && user.lastName.toLowerCase().includes(term)) ||
@@ -983,7 +1151,7 @@ document.addEventListener('click', e => {
     }
 });
 
-// --- Initialize ---
+// --- Init ---
 document.addEventListener('DOMContentLoaded', () => {
     loadCategories();
     loadUsers();

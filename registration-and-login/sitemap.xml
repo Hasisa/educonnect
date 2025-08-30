@@ -3,7 +3,7 @@
 
   <!-- Главная -->
   <url>
-    <loc>https://educonnect-958e2.web.app/</loc>
+    <loc>https://educonnectforum.web.app/</loc>
     <lastmod>2025-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -11,7 +11,7 @@
 
   <!-- Домашняя лента -->
   <url>
-    <loc>https://educonnect-958e2.web.app/homefeed.html</loc>
+    <loc>https://educonnectforum.web.app/homefeed.html</loc>
     <lastmod>2025-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -19,7 +19,7 @@
 
   <!-- Материалы / Категории уроков -->
   <url>
-    <loc>https://educonnect-958e2.web.app/materials/materials.html</loc>
+    <loc>https://educonnectforum.web.app/materials/materials.html</loc>
     <lastmod>2025-08-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -27,7 +27,7 @@
 
   <!-- Сообщества -->
   <url>
-    <loc>https://educonnect-958e2.web.app/communities/communities.html</loc>
+    <loc>https://educonnectforum.web.app/communities/communities.html</loc>
     <lastmod>2025-08-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
@@ -35,7 +35,7 @@
 
   <!-- Дашборд -->
   <url>
-    <loc>https://educonnect-958e2.web.app/dashboard.html</loc>
+    <loc>https://educonnectforum.web.app/dashboard.html</loc>
     <lastmod>2025-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -43,13 +43,13 @@
 
   <!-- Регистрация и вход -->
   <url>
-    <loc>https://educonnect-958e2.web.app/register.html</loc>
+    <loc>https://educonnectforum.web.app/register.html</loc>
     <lastmod>2025-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://educonnect-958e2.web.app/signin.html</loc>
+    <loc>https://educonnectforum.web.app/signin.html</loc>
     <lastmod>2025-08-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -57,7 +57,7 @@
 
   <!-- Пример страницы отдельного сообщества -->
   <url>
-    <loc>https://educonnect-958e2.web.app/communities/community.html</loc>
+    <loc>https://educonnectforum.web.app/communities/community.html</loc>
     <lastmod>2025-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>
@@ -65,7 +65,7 @@
 
   <!-- Пример страницы комментариев -->
   <url>
-    <loc>https://educonnect-958e2.web.app/communities/comments.html</loc>
+    <loc>https://educonnectforum.web.app/communities/comments.html</loc>
     <lastmod>2025-08-17</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>

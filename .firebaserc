@@ -1,8 +1,9 @@
 {
   "projects": {
-    "default": "educonnect-958e2",
+    "default": "educonnectforum",
     "educonnec": "educonnect-808af",
-    "educonnect": "educonnect-958e2"
+    "educonnect": "educonnect-bb797",
+    "educonnectforunm": "educonnectforum"
   },
   "targets": {},
   "etags": {}

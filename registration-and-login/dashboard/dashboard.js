@@ -24,12 +24,16 @@ class DashboardManager {
       userEmail: document.getElementById('user-email'),
       userDescription: document.getElementById('user-description'),
       saveDescriptionBtn: document.getElementById('save-description-btn'),
-      saveStatus: document.getElementById('save-status')
+      saveStatus: document.getElementById('save-status'),
+      userClass: document.getElementById('user-class'),
+      userClub1: document.getElementById('user-club1'),
+      userClub2: document.getElementById('user-club2')
     };
   }
 
   // Set up event listeners
   setupEventListeners() {
+    // description
     this.elements.saveDescriptionBtn.addEventListener('click', () => {
       this.saveDescription();
     });
@@ -43,6 +47,21 @@ class DashboardManager {
         e.preventDefault();
         this.saveDescription();
       }
+    });
+
+    // userClass
+    this.elements.userClass.addEventListener('change', () => {
+      this.saveField('userClass', this.elements.userClass.value);
+    });
+
+    // club1
+    this.elements.userClub1.addEventListener('change', () => {
+      this.saveField('club1', this.elements.userClub1.value);
+    });
+
+    // club2
+    this.elements.userClub2.addEventListener('change', () => {
+      this.saveField('club2', this.elements.userClub2.value);
     });
   }
 
@@ -64,6 +83,9 @@ class DashboardManager {
           email: window.firebaseAuth.currentUser.email || '',
           avatarURL: '',
           description: '',
+          userClass: '',
+          club1: '',
+          club2: '',
           createdAt: new Date()
         });
         this.currentUserData = {
@@ -71,7 +93,10 @@ class DashboardManager {
           lastName: '',
           email: window.firebaseAuth.currentUser.email || '',
           avatarURL: '',
-          description: ''
+          description: '',
+          userClass: '',
+          club1: '',
+          club2: ''
         };
         this.displayUserData();
         this.setupRealtimeListener(userId);
@@ -94,12 +119,17 @@ class DashboardManager {
 
   // Display user info
   displayUserData(updateDescription = true) {
-    const { firstName = '', lastName = '', email = '', description = '', avatarURL = '' } = this.currentUserData;
+    const { firstName = '', lastName = '', email = '', description = '', avatarURL = '', userClass = '', club1 = '', club2 = '' } = this.currentUserData;
 
     const fullName = `${firstName} ${lastName}`.trim() || 'User Name';
     this.elements.userFullname.textContent = fullName;
 
     this.elements.userEmail.textContent = email || 'No email';
+    this.elements.userClass.value = userClass || '';
+    
+    // Update clubs
+    this.elements.userClub1.value = club1 || '';
+    this.elements.userClub2.value = club2 || '';
 
     if (updateDescription && !this.elements.userDescription.matches(':focus')) {
       this.elements.userDescription.value = description || '';
@@ -121,7 +151,7 @@ class DashboardManager {
       this.elements.userAvatar.onerror = () => {
         this.elements.userAvatar.style.display = 'none';
         this.elements.avatarFallback.style.display = 'flex';
-        this.elements.userAvatar.onerror = null; // Чтобы обработчик сработал один раз
+        this.elements.userAvatar.onerror = null;
       };
     } else {
       this.elements.userAvatar.style.display = 'none';
@@ -181,6 +211,23 @@ class DashboardManager {
         this.elements.saveDescriptionBtn.disabled = false;
         this.elements.saveDescriptionBtn.textContent = 'Save Description';
       }
+    }
+  }
+
+  // Универсальный метод для сохранения любого поля
+  async saveField(field, value) {
+    const user = window.firebaseAuth.currentUser;
+    if (!user) return;
+
+    try {
+      await window.firebaseDb.collection('users').doc(user.uid).update({
+        [field]: value,
+        updatedAt: this.firebaseInstance.firestore.FieldValue.serverTimestamp()
+      });
+      this.showSaveStatus(`${field} saved!`, 'success');
+    } catch (error) {
+      console.error(`Error saving ${field}:`, error);
+      this.showError(`Failed to save ${field}`);
     }
   }
 

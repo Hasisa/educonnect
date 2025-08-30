@@ -131,7 +131,10 @@ function displayCommunityData() {
 
   if (elements.communityTitle) elements.communityTitle.textContent = c.name || '';
   if (elements.communityType) elements.communityType.textContent = c.type || 'General';
-  if (elements.communityMembers) elements.communityMembers.textContent = `${c.memberCount || 0} members`;
+
+  const memberCount = Array.isArray(c.members) ? c.members.length : 0;
+  if (elements.communityMembers) elements.communityMembers.textContent = `${memberCount} members`;
+
   if (elements.communityDescription) elements.communityDescription.textContent = c.description || 'No description available.';
 
   if (elements.communityCreated) {
@@ -273,9 +276,7 @@ async function createPostElement(post) {
         if (userData.firstName && userData.lastName) {
           authorFullName = `${userData.firstName} ${userData.lastName}`;
         }
-        if (userData.avatarUrl) {
-          authorAvatarUrl = userData.avatarUrl;
-        }
+        if (userData.avatarUrl) authorAvatarUrl = userData.avatarUrl;
       }
     }
   } catch (error) {
@@ -283,142 +284,148 @@ async function createPostElement(post) {
   }
 
   const authorInitials = authorFullName.split(' ').map(n => n[0]).join('').toUpperCase();
-
   const likedBy = post.likedBy || [];
   const isLiked = currentUser ? likedBy.includes(currentUser.uid) : false;
 
-  // Вложение с кнопкой Download (с fetch + blob)
-  // Вложение с поддержкой изображений
-// Вложение с поддержкой открытия файла
-let attachmentHtml = '';
-if (post.attachment && post.attachment.url) {
-  const isImage = post.attachment.url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
-
-  if (isImage) {
-    attachmentHtml = `
-      <div class="post-attachment">
-        <img src="${escapeHtml(post.attachment.url)}" alt="${escapeHtml(post.attachment.name)}" class="post-image" />
-      </div>
-    `;
-  } else {
-    // Для обычных файлов — ссылка открывает в новой вкладке, кнопка остаётся для скачивания
-    attachmentHtml = `
-      <div class="post-attachment">
-        <a href="${escapeHtml(post.attachment.url)}" target="_blank" rel="noopener noreferrer">
-          <i class="fas fa-file"></i> ${escapeHtml(post.attachment.name)}
-        </a>
-        <button class="download-btn" aria-label="Download ${escapeHtml(post.attachment.name)}" data-url="${escapeHtml(post.attachment.url)}" data-filename="${escapeHtml(post.attachment.name)}">
-          <i class="fas fa-download"></i> Download
-        </button>
-      </div>
-    `;
+  let attachmentHtml = '';
+  if (post.attachment && post.attachment.url) {
+    const isImage = post.attachment.url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+    if (isImage) {
+      attachmentHtml = `<div class="post-attachment"><img src="${escapeHtml(post.attachment.url)}" alt="${escapeHtml(post.attachment.name)}" class="post-image" /></div>`;
+    } else {
+      attachmentHtml = `
+        <div class="post-attachment">
+          <a href="${escapeHtml(post.attachment.url)}" target="_blank" rel="noopener noreferrer">
+            <i class="fas fa-file"></i> ${escapeHtml(post.attachment.name)}
+          </a>
+          <button type="button" class="download-btn" data-url="${escapeHtml(post.attachment.url)}" data-filename="${escapeHtml(post.attachment.name)}">
+            <i class="fas fa-download"></i> Download
+          </button>
+        </div>`;
+    }
   }
+const authorAvatarHtml = authorAvatarUrl
+  ? `<img src="${escapeHtml(authorAvatarUrl)}" alt="${escapeHtml(authorFullName)}" class="author-avatar-img" />`
+  : `<div class="author-avatar">${escapeHtml(authorInitials)}</div>`;
+
+const authorNameHtml = `<span class="author-name" style="cursor:pointer; color:blue;">${escapeHtml(authorFullName)}</span>`;
+
+postDiv.innerHTML = `
+  <div class="post-header">
+    <div class="post-author">
+      ${authorAvatarHtml}
+      <div class="author-info">
+        <h4>${authorNameHtml}</h4>
+        <span class="post-timestamp">${formatRelativeTime(createdAt)}</span>
+      </div>
+    </div>
+  </div>
+  <div class="post-content">${escapeHtml(post.content)}</div>
+  ${attachmentHtml}
+  <div class="post-actions">
+    <button type="button" class="post-action like-btn" data-post-id="${post.id}" aria-pressed="${isLiked}">
+      <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+      <span class="likes-count">${post.likes || 0}</span>
+    </button>
+    <button type="button" class="post-action reply-btn" data-post-id="${post.id}">
+      <i class="far fa-comment"></i> Reply
+    </button>
+  </div>
+`;
+
+// Добавляем клик на имя автора
+const authorNameSpan = postDiv.querySelector('.author-name');
+if (authorNameSpan) {
+  authorNameSpan.addEventListener('click', () => {
+    if (post.authorId) {
+      window.location.href = `../dashboard.html?id=${post.authorId}`;
+    }
+  });
 }
 
-
-  let authorAvatarHtml = '';
-  if (authorAvatarUrl) {
-    authorAvatarHtml = `<img src="${escapeHtml(authorAvatarUrl)}" alt="${escapeHtml(authorFullName)}" class="author-avatar-img" />`;
-  } else {
-    authorAvatarHtml = `<div class="author-avatar">${escapeHtml(authorInitials)}</div>`;
-  }
-
-  postDiv.innerHTML = `
-    <div class="post-header">
-      <div class="post-author">
-        ${authorAvatarHtml}
-        <div class="author-info">
-          <h4>${escapeHtml(authorFullName)}</h4>
-          <span class="post-timestamp">${formatRelativeTime(createdAt)}</span>
-        </div>
-      </div>
-    </div>
-    <div class="post-content">${escapeHtml(post.content)}</div>
-    ${attachmentHtml}
-    <div class="post-actions">
-      <button class="post-action like-btn" data-post-id="${post.id}" aria-pressed="${isLiked}">
-        <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-        <span class="likes-count">${post.likes || 0}</span>
-      </button>
-      <button class="post-action reply-btn" data-post-id="${post.id}">
-        <i class="far fa-comment"></i> <span>Reply</span>
-      </button>
-    </div>
-  `;
-
-  // Обработчик кнопки скачивания (fetch + blob)
+  // Событие Download
   const downloadBtn = postDiv.querySelector('.download-btn');
   if (downloadBtn) {
     downloadBtn.addEventListener('click', async e => {
       e.preventDefault();
       const url = downloadBtn.getAttribute('data-url');
       const filename = downloadBtn.getAttribute('data-filename') || 'file';
-
-      try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Network response was not ok');
-
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-
-        const a = document.createElement('a');
-        a.href = blobUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(blobUrl);
-      } catch (error) {
-        console.error('Error downloading file:', error);
-        alert('Failed to download file. Please try again.');
-      }
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const a = document.createElement('a');
+      a.href = window.URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     });
   }
 
-  // Обработчик лайков
-  const likeBtn = postDiv.querySelector('.like-btn');
-  likeBtn.addEventListener('click', async () => {
-    if (!currentUser) {
-      alert('Please log in to like posts.');
-      return;
-    }
+  // Событие Like
+// Событие Like
+const likeBtn = postDiv.querySelector('.like-btn');
+likeBtn.addEventListener('click', async e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!currentUser) return alert('Please log in to like posts.');
+
+    // отключаем кнопку пока обрабатываем
     likeBtn.disabled = true;
-    const postRef = db.collection('communities').doc(currentCommunityId).collection('posts').doc(post.id);
+
     try {
-      const postDoc = await postRef.get();
-      if (!postDoc.exists) throw new Error('Post not found');
-      const postData = postDoc.data();
-      const likedBy = postData.likedBy || [];
-      const isLikedNow = likedBy.includes(currentUser.uid);
+        const postRef = db.collection('communities')
+                          .doc(currentCommunityId)
+                          .collection('posts')
+                          .doc(post.id);
 
-      if (isLikedNow) {
-        await postRef.update({
-          likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
-          likes: firebase.firestore.FieldValue.increment(-1)
+        await db.runTransaction(async (transaction) => {
+            const postDoc = await transaction.get(postRef);
+            const likedBy = postDoc.data().likedBy || [];
+            const isLikedNow = likedBy.includes(currentUser.uid);
+
+            if (isLikedNow) {
+                transaction.update(postRef, {
+                    likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
+                    likes: firebase.firestore.FieldValue.increment(-1)
+                });
+            } else {
+                transaction.update(postRef, {
+                    likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+                    likes: firebase.firestore.FieldValue.increment(1)
+                });
+            }
+
+            // сразу обновляем UI
+            const likesCountSpan = likeBtn.querySelector('.likes-count');
+            if (likesCountSpan) {
+                let currentLikes = parseInt(likesCountSpan.textContent) || 0;
+                likesCountSpan.textContent = isLikedNow ? currentLikes - 1 : currentLikes + 1;
+            }
+
+            const icon = likeBtn.querySelector('i');
+            if (icon) icon.className = isLikedNow ? 'far fa-heart' : 'fas fa-heart';
+            likeBtn.setAttribute('aria-pressed', !isLikedNow);
         });
-      } else {
-        await postRef.update({
-          likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
-          likes: firebase.firestore.FieldValue.increment(1)
-        });
-      }
+
     } catch (error) {
-      console.error('Error updating like:', error);
-      alert('Failed to update like. Please try again.');
+        console.error('Error updating like:', error);
+        alert('Failed to update like. Please try again.');
     } finally {
-      likeBtn.disabled = false;
+        likeBtn.disabled = false;
     }
-  });
+});
 
-  // Обработчик кнопки Reply
+
+  // Событие Reply
   const replyBtn = postDiv.querySelector('.reply-btn');
   replyBtn.addEventListener('click', () => {
-    if (!currentCommunityId) return alert('Community not loaded yet.');
     window.location.href = `comments.html?communityId=${currentCommunityId}&postId=${post.id}`;
   });
 
   return postDiv;
 }
+
 
 function escapeHtml(text) {
   if (!text) return '';

@@ -1,4 +1,4 @@
-// comments.js — полностью рабочий пример с attachments
+// comments.js — рабочий пример с кликабельными никами и аватарами
 
 // ---------------- Firebase инициализация ----------------
 const firebaseConfig = {
@@ -9,7 +9,6 @@ const firebaseConfig = {
   messagingSenderId: "1044066506835",
   appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6"
 };
-
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -18,11 +17,7 @@ const db = firebase.firestore();
 const urlParams = new URLSearchParams(window.location.search);
 const COMMUNITY_ID = urlParams.get('communityId');
 const POST_ID = urlParams.get('postId');
-
-if (!COMMUNITY_ID || !POST_ID) {
-  alert('Community ID или Post ID не указаны в URL.');
-  throw new Error('Missing community or post ID in URL');
-}
+if (!COMMUNITY_ID || !POST_ID) throw new Error('Missing community or post ID in URL');
 
 // ---------------- Constants ----------------
 const ANONYMOUS_USER = { uid: 'anonymous', displayName: 'Anonymous User', photoURL: null };
@@ -69,10 +64,11 @@ function getUserDisplayName(userData) {
 }
 
 function getUserAvatar(userData, fallbackSeed) {
-  if (userData?.avatarURL) return userData.avatarURL;
+  if (userData?.avatarUrl) return userData.avatarUrl; // исправлено с avatarURL на avatarUrl
   const seed = userData?.displayName || userData?.firstName || fallbackSeed || 'anonymous';
   return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}`;
 }
+
 
 function formatDate(timestamp) {
   if (!timestamp) return 'Just now';
@@ -170,30 +166,34 @@ function displayPost(postData) {
 
 function updatePostUI(authorData, postData) {
   elements.postAuthorAvatar.src = getUserAvatar(authorData, postData.authorId);
-  elements.postAuthorName.textContent = getUserDisplayName(authorData);
+  elements.postAuthorName.innerHTML = `<a href="../dashboard.html?userId=${postData.authorId}">${getUserDisplayName(authorData)}</a>`;
   elements.postDate.textContent = formatDate(postData.createdAt);
   elements.postText.textContent = postData.content;
 
-  // Attachments
+  // Очистим контейнер вложений
   elements.postAttachments.innerHTML = '';
-  if(postData.attachments?.length){
-    postData.attachments.forEach(file=>{
-      if(file.url.match(/\.(jpeg|jpg|png|gif|webp)$/i)){
+  if (postData.attachments?.length) {
+    postData.attachments.forEach(file => {
+      const ext = (file.format || file.url.split('.').pop()).toLowerCase();
+      if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
         const img = document.createElement('img');
         img.src = file.url;
         img.alt = file.name || 'Attachment';
-        img.style.maxWidth = '100%';
-        img.style.borderRadius = '8px';
-        img.style.marginBottom = '8px';
         elements.postAttachments.appendChild(img);
       } else {
         const a = document.createElement('a');
-        a.href = file.url; 
-        a.target='_blank';
-        a.textContent = file.name;
-        a.style.display = 'block';
-        a.style.marginBottom = '4px';
-        elements.postAttachments.appendChild(a);
+        a.href = file.url;
+        a.target = '_blank';
+        a.textContent = file.name || 'Attachment';
+        const btn = document.createElement('button');
+        btn.textContent = 'Download';
+        btn.className = 'download-btn';
+        btn.onclick = (e) => { e.preventDefault(); window.open(a.href,'_blank'); };
+        const wrapper = document.createElement('div');
+        wrapper.className = 'post-attachment';
+        wrapper.appendChild(a);
+        wrapper.appendChild(btn);
+        elements.postAttachments.appendChild(wrapper);
       }
     });
   }
@@ -209,7 +209,7 @@ function updatePostUI(authorData, postData) {
 
 function updatePostUIAnonymous(postData) {
   elements.postAuthorAvatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=anonymous`;
-  elements.postAuthorName.textContent = 'Anonymous';
+  elements.postAuthorName.innerHTML = 'Anonymous';
   elements.postDate.textContent = formatDate(postData.createdAt);
   elements.postText.textContent = postData.content;
   elements.postAttachments.innerHTML = '';
@@ -221,22 +221,19 @@ function updatePostUIAnonymous(postData) {
 // ---------------- Comments ----------------
 function loadComments() {
   unsubscribeComments?.();
-
   const commentsRef = db.collection('communities').doc(COMMUNITY_ID)
     .collection('posts').doc(POST_ID).collection('comments').orderBy('createdAt', 'asc');
 
   unsubscribeComments = commentsRef.onSnapshot(snapshot => {
     const comments = [];
     const promises = [];
-
     snapshot.forEach(docSnap => {
       const commentData = { id: docSnap.id, ...docSnap.data() };
-      promises.push(loadReplies(docSnap.id).then(replies => { 
-        commentData.replies = replies; 
-        comments.push(commentData); 
+      promises.push(loadReplies(docSnap.id).then(replies => {
+        commentData.replies = replies;
+        comments.push(commentData);
       }));
     });
-
     Promise.all(promises).then(() => {
       comments.sort((a,b)=>a.createdAt?.seconds - b.createdAt?.seconds);
       displayComments(comments);
@@ -278,24 +275,26 @@ function createCommentElement(commentData, isReply=false) {
         <div class="comment-header">
           <div class="comment-author">
             <img src="${avatarURL}" alt="Author avatar" class="avatar" />
-            <span class="comment-author-name">${authorName}</span>
+            <span class="comment-author-name">
+              <a href="user-dashboard.html?userId=${commentData.authorId}">${authorName}</a>
+            </span>
           </div>
           <time class="comment-date">${formatDate(commentData.createdAt)}</time>
         </div>
         <div class="comment-content"><p>${escapeHtml(commentData.content)}</p></div>
         <div class="comment-attachments"></div>
         <div class="comment-actions">
-          <button class="like-btn ${isLiked?'liked':''}" ${currentUser.uid==='anonymous'?'disabled':''}>
-            <i class="far fa-heart"></i>
+          <button class="post-action like-btn ${isLiked?'liked':''}" aria-pressed="${isLiked}" ${currentUser.uid==='anonymous'?'disabled':''}>
+            <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
             <span class="like-count">${likeCount}</span>
           </button>
-          <button class="reply-btn" ${currentUser.uid==='anonymous'?'disabled':''}>
+          <button class="post-action reply-btn" ${currentUser.uid==='anonymous'?'disabled':''}>
             <i class="far fa-comment"></i> Reply
           </button>
         </div>
       `;
 
-      // Attachments
+      // Обработка вложений
       const attachmentsContainer = commentDiv.querySelector('.comment-attachments');
       if(commentData.attachments?.length){
         commentData.attachments.forEach(file => {
@@ -303,25 +302,25 @@ function createCommentElement(commentData, isReply=false) {
             const img = document.createElement('img');
             img.src = file.url;
             img.alt = file.name || 'Attachment';
-            img.style.maxWidth = '100%';
-            img.style.borderRadius = '8px';
-            img.style.marginBottom = '4px';
+            img.style.maxWidth='100%';
+            img.style.borderRadius='8px';
+            img.style.marginBottom='4px';
             attachmentsContainer.appendChild(img);
           } else {
             const a = document.createElement('a');
             a.href = file.url;
-            a.target = '_blank';
+            a.target='_blank';
             a.textContent = file.name;
-            a.style.display = 'block';
-            a.style.marginBottom = '2px';
+            a.style.display='block';
+            a.style.marginBottom='2px';
             attachmentsContainer.appendChild(a);
           }
         });
       }
 
+      // Лайки и ответы
       const likeBtn = commentDiv.querySelector('.like-btn');
       const replyBtn = commentDiv.querySelector('.reply-btn');
-
       likeBtn.onclick = () => {
         if(currentUser.uid==='anonymous'){ alert('Please log in to like.'); return; }
         handleLike('comment', commentData.id, null, commentData.likedBy || []);
@@ -334,41 +333,58 @@ function createCommentElement(commentData, isReply=false) {
       if(commentData.replies?.length){
         const repliesDiv = document.createElement('div');
         repliesDiv.className = 'replies';
-        const promises = commentData.replies.map(r => createCommentElement(r,true).then(el=>repliesDiv.appendChild(el)));
-        Promise.all(promises).then(()=>commentDiv.appendChild(repliesDiv)).finally(()=>resolve(commentDiv));
-      } else resolve(commentDiv);
+        const replyPromises = commentData.replies.map(r => createCommentElement(r,true).then(el => repliesDiv.appendChild(el)));
+        Promise.all(replyPromises)
+               .then(() => commentDiv.appendChild(repliesDiv))
+               .finally(() => resolve(commentDiv));
+      } else {
+        resolve(commentDiv);
+      }
 
-    }).catch(()=>resolve(document.createElement('div')));
-  });
+    }) // <- тут закрытие then
+    .catch(() => resolve(document.createElement('div')));
+  }); // <- тут закрытие new Promise
 }
 
+
+
 // ---------------- Likes ----------------
-function updateLikeButton(button,countElement,likeCount,likedBy){
+function updateLikeButton(button, countElement, likeCount, likedBy) {
   button.disabled = false;
   const isLiked = likedBy.includes(currentUser.uid);
+  button.setAttribute('aria-pressed', String(isLiked));
   button.classList.toggle('liked', isLiked);
+  const icon = button.querySelector('i');
+  if(icon) icon.className = isLiked ? 'fas fa-heart' : 'far fa-heart';
   countElement.textContent = likeCount;
 }
 
 function handleLike(type,itemId,parentId,currentLikedBy){
   if(currentUser.uid==='anonymous'){ alert('Please log in to like.'); return; }
   const isLiked = currentLikedBy.includes(currentUser.uid);
-  const newLikedBy = isLiked ? currentLikedBy.filter(uid=>uid!==currentUser.uid)
-                             : [...currentLikedBy, currentUser.uid];
+  const newLikedBy = isLiked ? currentLikedBy.filter(uid=>uid!==currentUser.uid) : [...currentLikedBy,currentUser.uid];
 
-  if(type==='post'){ 
-    elements.postLikeCount.textContent = newLikedBy.length; 
-    elements.postLikeBtn.classList.toggle('liked',!isLiked); 
+  if(type==='post'){
+    elements.postLikeCount.textContent = newLikedBy.length;
+    elements.postLikeBtn.setAttribute('aria-pressed', String(!isLiked));
+    elements.postLikeBtn.classList.toggle('liked', !isLiked);
+    const icon = elements.postLikeBtn.querySelector('i');
+    if(icon) icon.className = !isLiked?'fas fa-heart':'far fa-heart';
   } else {
     const countEl = document.querySelector(`#comment-${itemId} .like-count`);
     const btnEl = document.querySelector(`#comment-${itemId} .like-btn`);
     if(countEl) countEl.textContent = newLikedBy.length;
-    if(btnEl) btnEl.classList.toggle('liked', !isLiked);
+    if(btnEl){
+      btnEl.setAttribute('aria-pressed', String(!isLiked));
+      btnEl.classList.toggle('liked', !isLiked);
+      const icon = btnEl.querySelector('i');
+      if(icon) icon.className = !isLiked?'fas fa-heart':'far fa-heart';
+    }
   }
 
   let docRef;
   if(type==='post') docRef = db.collection('communities').doc(COMMUNITY_ID).collection('posts').doc(POST_ID);
-  else if(type==='comment') docRef = db.collection('communities').doc(COMMUNITY_ID).collection('posts').doc(POST_ID).collection('comments').doc(itemId);
+  else docRef = db.collection('communities').doc(COMMUNITY_ID).collection('posts').doc(POST_ID).collection('comments').doc(itemId);
 
   const update = isLiked ? { likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) }
                          : { likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) };
@@ -405,8 +421,10 @@ function handleSubmitReply(){
     authorId: currentUser.uid, 
     content: elements.replyInput.value.trim(), 
     createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
-    likedBy:[] 
+    likedBy:[],
+    attachments:[] // добавляем поле attachments
   };
+
   const repliesRef = db.collection('communities').doc(COMMUNITY_ID).collection('posts').doc(POST_ID)
                         .collection('comments').doc(currentReplyData.itemId).collection('replies');
 
@@ -429,7 +447,7 @@ function handlePostComment(){
     content: elements.commentInput.value.trim(), 
     createdAt: firebase.firestore.FieldValue.serverTimestamp(), 
     likedBy:[], 
-    attachment:[] 
+    attachments:[] 
   };
   const commentsRef = db.collection('communities').doc(COMMUNITY_ID).collection('posts').doc(POST_ID).collection('comments');
 
@@ -441,3 +459,4 @@ function handlePostComment(){
 
 // ---------------- Запуск ----------------
 window.addEventListener('load', init);
+  

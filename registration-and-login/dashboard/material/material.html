@@ -667,54 +667,80 @@
                 justify-content: center;
             }
         }
-        .header-search-results .header-user-item {
+       .header-search-results {
+    display: none;
+    width: 100%;
+    max-width: 1200px;
+    margin: 16px auto 0;
+    background-color: #fff;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Одна карточка пользователя */
+.header-search-results .header-user-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 16px;
+    width: 100%;
+    padding: 12px 24px;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 .header-search-results .header-user-item:hover {
-    background: #f1f5f9;
+    background-color: #f0f4ff;
 }
 
-.header-search-results .header-user-avatar img {
-    width: 36px;
-    height: 36px;
+/* Аватар и инициалы */
+.header-user-avatar,
+.header-user-initials {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
+.header-user-avatar img {
+    width: 32px;      /* размер картинки */
+    height: 32px;
+    border-radius: 100%; /* делает круг */
+    object-fit: cover;  /* чтобы картинка не растягивалась */
+}
+
+/* Информация о пользователе */
 .header-search-results .header-user-info {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
 }
 
 .header-search-results .header-user-name {
     font-weight: 600;
     font-size: 14px;
     color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .header-search-results .header-user-email {
     font-size: 12px;
     color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.header-user-initials {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: #3b82f6;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    text-transform: uppercase;
-}
+
 
 
         
@@ -731,6 +757,7 @@
                 <a href="../materials/materials.html" class="nav-link">Lesson Categories</a>
                 <a href="../communities/communities.html" class="nav-link">Communities</a>
                 <a href="../dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="../tools/tools.html" class="nav-link">Tools</a>
             </nav>
             
         </div>

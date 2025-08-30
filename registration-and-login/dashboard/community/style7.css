@@ -831,8 +831,11 @@ input[type="file"] {
     margin-right: 4px;
 }
 .post-image {
-  max-width: 100%;
+  max-width: 700px;
+  max-height: 600px;
+  width: 100%;
   height: auto;
   border-radius: 8px;
   margin-top: 10px;
+  object-fit: cover;
 }
