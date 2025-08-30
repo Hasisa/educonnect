@@ -1,4 +1,3 @@
-// ai/server.js
 import express from 'express';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
@@ -8,13 +7,24 @@ dotenv.config();
 const router = express.Router();
 
 // Инициализация OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// OPTIONS preflight для CORS
+router.options('/', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
 });
 
-// Эндпоинт генерации теста
+// POST endpoint для генерации теста
 router.post('/', async (req, res) => {
   const { material, questionCount } = req.body;
+
+  // CORS заголовки
+  res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (!material || !questionCount) {
     return res.status(400).json({ error: 'Material and questionCount are required' });
@@ -41,7 +51,6 @@ ${material}
 
     let questions;
     try {
-      // Убираем лишние символы и парсим JSON
       const cleanedText = text.trim().replace(/^\uFEFF/, ''); 
       questions = JSON.parse(cleanedText);
 
@@ -51,7 +60,6 @@ ${material}
       return res.status(500).json({ error: 'Failed to parse AI response from OpenAI' });
     }
 
-    // Возвращаем массив напрямую
     res.json({ questions });
 
   } catch (error) {
