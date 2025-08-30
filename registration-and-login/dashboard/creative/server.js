@@ -1,3 +1,4 @@
+// generate/server.js
 import express from 'express';
 import OpenAI from 'openai';
 
@@ -17,7 +18,7 @@ router.post('/', async (req, res) => {
     }
 
     let result;
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'mindmap':
         result = await generateMindMap(topic);
         break;
@@ -28,7 +29,7 @@ router.post('/', async (req, res) => {
         result = await generateChart(topic);
         break;
       default:
-        throw new Error('Unknown type');
+        return res.status(400).json({ error: 'Unknown type' });
     }
 
     res.json({ result });
@@ -48,7 +49,6 @@ Generate a complete and detailed mindmap for someone to become a genius in "${to
 Branch: Main branch title
   Subtopic: Subtopic title
     Detail: One meaningful detail or explanation
-- Generate as many branches, subtopics, and details as necessary to cover the topic comprehensively.
 - Output only the text in the exact format above, without extra explanation or commentary.
 `;
 
@@ -58,23 +58,21 @@ Branch: Main branch title
     temperature: 0.7,
   });
 
-  return response.choices[0].message.content.trim();
+  return response.choices?.[0]?.message?.content?.trim() || '⚠️ No response from AI';
 }
 
-// Генерация осмысленной diagram для Excalidraw через GPT
+// Генерация diagram для Excalidraw
 async function generateDiagram(topic) {
   const prompt = `
 Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
-- Output JSON with an array of elements suitable for Excalidraw:
-  - rectangles, ellipses, arrows, and text elements
-  - include x, y positions, width, height, strokeColor, backgroundColor, text, fontSize
-- The diagram should clearly show key concepts, their relationships, and hierarchy.
-- Example output format:
+- Output valid JSON with rectangles, ellipses, arrows, and text elements.
+- Include positions, width, height, strokeColor, backgroundColor, text, fontSize.
+- Example output:
 [
   { "id": "1", "type": "rectangle", "x": 100, "y": 100, "width": 200, "height": 100, "backgroundColor": "#dbeafe", "strokeColor": "#2563eb", "strokeWidth": 2 },
   { "id": "2", "type": "text", "x": 150, "y": 135, "width": 100, "height": 30, "text": "Main Concept", "fontSize": 16, "textAlign": "center", "verticalAlign": "middle" }
 ]
-- Output valid JSON only, no extra explanation.
+- Output JSON only.
 `;
 
   const response = await openai.chat.completions.create({
@@ -83,26 +81,21 @@ Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
     temperature: 0.7,
   });
 
-  // Парсим JSON
   try {
-    const text = response.choices[0].message.content.trim();
-    return JSON.parse(text);
-  } catch (e) {
-    console.error('Diagram parse error:', e);
+    return JSON.parse(response.choices[0].message.content.trim());
+  } catch (err) {
+    console.error('Diagram parse error:', err);
     return generateMockDiagram(topic);
   }
 }
 
-// Генерация осмысленного chart для Chart.js через GPT
+// Генерация chart для Chart.js
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-- Include:
-  - type: "bar", "line", "pie", etc.
-  - data: { labels: [], datasets: [{ label, data, backgroundColor, borderColor, borderWidth }] }
-  - options: responsive, maintainAspectRatio, plugins (title and legend), scales (x and y axes)
-- Make the chart meaningful for the topic (not random numbers)
-- Output valid JSON only, no extra explanation
+- Include type, data (labels, datasets), options (responsive, plugins, scales).
+- Make it meaningful for the topic.
+- Output JSON only.
 `;
 
   const response = await openai.chat.completions.create({
@@ -112,15 +105,14 @@ Generate a Chart.js configuration (JSON) for the topic "${topic}".
   });
 
   try {
-    const text = response.choices[0].message.content.trim();
-    return JSON.parse(text);
-  } catch (e) {
-    console.error('Chart parse error:', e);
+    return JSON.parse(response.choices[0].message.content.trim());
+  } catch (err) {
+    console.error('Chart parse error:', err);
     return generateMockChart(topic);
   }
 }
 
-// Mock Excalidraw diagram
+// Mock diagram
 function generateMockDiagram(topic) {
   return [
     { id: "1", type: "rectangle", x: 100, y: 100, width: 200, height: 100, backgroundColor: "#dbeafe", strokeColor: "#2563eb", strokeWidth: 2 },
@@ -128,7 +120,7 @@ function generateMockDiagram(topic) {
   ];
 }
 
-// Mock Chart.js data
+// Mock chart
 function generateMockChart(topic) {
   const categories = ['Category A','Category B','Category C','Category D','Category E'];
   const values = categories.map(() => Math.floor(Math.random() * 100) + 10);
