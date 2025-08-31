@@ -3,43 +3,35 @@ import OpenAI from "openai";
 import dotenv from "dotenv";
 
 dotenv.config();
+const app = express();
+app.use(express.json());
 
-const router = express.Router();
+const FRONTEND_URL = "https://educonnectforum.web.app";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ⚠ Настройки CORS для фронтенда
-const FRONTEND_URL = "https://educonnectforum.web.app";
-
-// OPTIONS для preflight
-router.options("/", (req, res) => {
+// ⚠ Глобальный CORS middleware
+app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.sendStatus(200);
+  if (req.method === "OPTIONS") return res.sendStatus(200);
+  next();
 });
 
-// POST - основной роут
-router.post("/", async (req, res) => {
+// POST /api/ai
+app.post("/api/ai", async (req, res) => {
   const { message } = req.body;
-
   if (!message) return res.status(400).json({ error: "Message is required" });
 
   try {
     const response = await openai.chat.completions.create({
-      // Оптимальная модель для бесплатного API
-      model: "gpt-5-mini", // можно заменить на "gpt-5-mini"
+      model: "gpt-5-mini", // оптимально для бесплатного API
       messages: [{ role: "user", content: message }],
       temperature: 0.7,
-      max_tokens: 600, // ограничение длины ответа
+      max_tokens: 600,
     });
 
     const reply = response.choices?.[0]?.message?.content?.trim() || "Нет ответа от AI";
-
-    // CORS заголовки
-    res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
     res.json({ reply });
   } catch (err) {
     console.error("AI chat error:", err);
@@ -47,4 +39,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-export default router;
+// Запуск сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
