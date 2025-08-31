@@ -6,74 +6,24 @@
 <title>Home Feed - Dashboard</title>
 <link rel="stylesheet" href="style3.css" />
 <style>
-  /* Посты и действия */
-  /* Лайки и действия под постом */
-.post-likes-count {
-  margin-left: 6px;
-  font-weight: bold;
-  color: #1f2937;
-}
+  /* --- Лайки и действия --- */
+  .post-likes-count { margin-left: 6px; font-weight: bold; color: #1f2937; }
+  .post-actions { margin-top: 10px; display: flex; gap: 10px; }
+  button.like-btn, button.reply-btn {
+    display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none; background: none; color: #6b7280;
+    transition: all 0.2s ease;
+  }
+  button.like-btn:hover, button.reply-btn:hover { transform: translateY(-1px) scale(1.05); color: #4b5563; }
+  button.like-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: transparent; transition: fill 0.3s ease, stroke 0.3s ease, transform 0.2s ease; }
+  button.like-btn.liked svg { fill: #6b7280; stroke: #6b7280; transform: scale(1.1); }
+  button.reply-btn::before {
+    content: ""; display: inline-block; width: 18px; height: 18px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="%236b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"/></svg>') no-repeat center center;
+    background-size: contain; margin-right: 4px; vertical-align: middle;
+  }
 
-.post-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-}
-
-/* Кнопки Like и Reply без границ */
-button.like-btn,
-button.reply-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: #6b7280; /* серый по умолчанию */
-  transition: all 0.2s ease;
-}
-
-/* Hover эффект */
-button.like-btn:hover,
-button.reply-btn:hover {
-  transform: translateY(-1px) scale(1.05);
-  color: #4b5563; /* чуть темнее серого на hover */
-}
-
-/* Иконка лайка */
-button.like-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  fill: transparent;
-  transition: fill 0.3s ease, stroke 0.3s ease, transform 0.2s ease;
-}
-
-/* Лайк активный - заполняется серым */
-button.like-btn.liked svg {
-  fill: #6b7280; /* серый */
-  stroke: #6b7280;
-  transform: scale(1.1);
-}
-
-/* Reply облачко комментария */
-button.reply-btn::before {
-  content: "";
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="%236b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z"/></svg>') no-repeat center center;
-  background-size: contain;
-  margin-right: 4px;
-  vertical-align: middle;
-}
-
-
-  /* Комментарии */
+  /* --- Комментарии --- */
   .comments-section { margin-top: 12px; padding-left: 12px; border-left: 3px solid #ddd; display: none; }
   .comment { margin-bottom: 8px; font-size: 0.9em; color: #333; }
   .comment strong { color: #222; }
@@ -81,7 +31,7 @@ button.reply-btn::before {
   .comment-input input { flex-grow: 1; padding: 6px; }
   .comment-input button { padding: 6px 12px; cursor: pointer; }
 
-  /* Аватар и информация автора */
+  /* --- Автор --- */
   .post-header { display: flex; align-items: center; gap: 10px; }
   .author-avatar-container { width: 40px; height: 40px; flex-shrink: 0; }
   .author-avatar-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -97,57 +47,28 @@ button.reply-btn::before {
   .post-community-link { font-size: 0.85rem; color: #4f46e5; text-decoration: none; }
   .post-community-link:hover { text-decoration: underline; }
 
-  /* Вложения */
- .post-attachments {
-      margin: 12px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+  /* --- Вложения --- */
+  .post-attachments { margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+  .post-images img { max-width: 700px; max-height: 600px; width: 100%; height: auto; border-radius: 8px; object-fit: cover; }
+  .post-attachment {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 8px; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+    background-color: #f3f4f6; font-size: 14px; color: #374151; cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  .post-attachment:hover { background-color: #3b82f6; color: #fff; }
+  .post-attachment .download-btn {
+    background-color: #3b82f6; color: #fff; border: none;
+    padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;
+  }
+  .download-btn:hover { background-color: #2563eb; }
 
-    .post-images img {
-      max-width: 700px;
-      max-height: 600px;
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      object-fit: cover;
-    }
-
-    .post-attachment {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      background-color: #f3f4f6;
-      font-size: 14px;
-      color: #374151;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-
-    .post-attachment:hover {
-      background-color: #3b82f6;
-      color: #ffffff;
-    }
-
-    .post-attachment .download-btn {
-      background-color: #3b82f6;
-      color: #ffffff;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-
-    .download-btn:hover {
-      background-color: #2563eb;
-    }
-
+  /* --- Результаты поиска --- */
+  .header-search-results {
+    position: absolute; background: #fff; border: 1px solid #ddd; max-height: 300px; overflow-y: auto; width: 300px; z-index: 10;
+  }
+  .header-search-results .search-result { padding: 8px 12px; cursor: pointer; }
+  .header-search-results .search-result:hover { background: #f3f4f6; }
 </style>
 </head>
 <body>
@@ -155,7 +76,7 @@ button.reply-btn::before {
   <div class="header-container">
     <div class="logo"><h2>EduConnect</h2></div>
     <nav class="nav" role="navigation" aria-label="Primary navigation">
-      <a href="homefeed.html" class="nav-link active" aria-current="page">Home Feed</a>
+      <a href="homefeed.html" class="nav-link active">Home Feed</a>
       <a href="../materials/materials.html" class="nav-link">Lesson Categories</a>
       <a href="../communities/communities.html" class="nav-link">Communities</a>
       <a href="../dashboard.html" class="nav-link">Dashboard</a>
@@ -167,22 +88,23 @@ button.reply-btn::before {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"/>
         </svg>
-        <input type="text" placeholder="Search users by name..." class="search-input" aria-label="Search users"/>
+        <input type="text" placeholder="Search users by name..." class="search-input"/>
       </div>
     </div>
   </div>
 </header>
 <div class="header-search-results"></div>
+
 <main class="container" role="main">
-  <div class="header-section" aria-label="Page header">
+  <div class="header-section">
     <h1>Home Feed</h1>
     <p>Latest posts from the community</p>
   </div>
-  <div id="error-container" class="error" role="alert" style="display:none;"></div>
-  <div id="loading" class="loading" aria-live="polite" aria-busy="true" style="display:flex;">
+  <div id="error-container" class="error" style="display:none;"></div>
+  <div id="loading" class="loading" style="display:flex;">
     <div class="spinner"></div><span>Loading posts...</span>
   </div>
-  <section id="feed" class="feed" aria-live="polite" aria-relevant="additions"></section>
+  <section id="feed" class="feed"></section>
   <div id="empty-state" class="empty-state" style="display:none;">
     <h3>No posts yet</h3>
     <p>Be the first to share something with the community!</p>
@@ -198,7 +120,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCkU8o1vz4Tmo0yVRFrlq2_1_eDfI_GPaA",
   authDomain: "educonnect-958e2.firebaseapp.com",
   projectId: "educonnect-958e2",
-  storageBucket: "educonnect-958e2.firebasestorage.com",
+  storageBucket: "educonnect-958e2.appspot.com",
   messagingSenderId: "1044066506835",
   appId: "1:1044066506835:web:ad2866ebfe60aa90978ea6"
 };
@@ -210,54 +132,29 @@ const feedContainer = document.getElementById('feed');
 const loadingIndicator = document.getElementById('loading');
 const emptyState = document.getElementById('empty-state');
 const errorContainer = document.getElementById('error-container');
-
-const headerSearchInput = document.querySelector('.search-input');
-const headerResultsContainer = document.querySelector('.header-search-results');
-
 let currentUser = null;
 
-// --- Header search ---
-function escapeHtml(text){ return text.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function getInitials(name){ return name.split(' ').map(n=>n[0]).join('').toUpperCase(); }
+let lastVisiblePost = null;
+let isLoading = false;
+const postsPerPage = 10;
 
-headerSearchInput.addEventListener('input', async ()=>{
-  const query = headerSearchInput.value.trim();
-  if(!query){ headerResultsContainer.style.display='none'; return; }
-  try{
-    const snapshot = await db.collection('users')
-      .where('firstName','>=',query)
-      .where('firstName','<=',query+'\uf8ff')
-      .limit(5).get();
-    const results = snapshot.docs.map(d=>({id:d.id,...d.data()}));
-    headerResultsContainer.innerHTML = results.map(u=>{
-      const fullName = ((u.firstName||'') + ' ' + (u.lastName||'')).trim() || 'Unnamed User';
-      const email = u.email || '';
-      const avatarHtml = u.avatarUrl ? `<img src="${u.avatarUrl}" alt="${fullName}" style="width:32px;height:32px;border-radius:50%">` :
-        `<div>${getInitials(fullName)}</div>`;
-      return `<div class="header-user-item" data-user-id="${u.id}"><div class="header-user-avatar">${avatarHtml}</div><div class="header-user-info"><span class="header-user-name">${escapeHtml(fullName)}</span><span class="header-user-email">${escapeHtml(email)}</span></div></div>`;
-    }).join('');
-    headerResultsContainer.style.display = results.length? 'block':'none';
-    document.querySelectorAll('.header-user-item').forEach(item=>{
-      item.addEventListener('click', ()=>{
-        window.location.href = `../dashboard.html?uid=${item.dataset.userId}`;
-      });
-    });
-  }catch(e){ console.error(e); headerResultsContainer.style.display='none'; }
-});
-
-// --- Load posts ---
+// --- LIKE ---
 async function toggleLike(postRef, likedBy, postElement){
   if(!currentUser) return alert('Please log in to like posts.');
   const userId = currentUser.uid;
   const hasLiked = likedBy.includes(userId);
-  const updatedLikedBy = hasLiked ? likedBy.filter(id=>id!==userId) : [...likedBy,userId];
-  try{
-    await postRef.update({likedBy: updatedLikedBy, likes: updatedLikedBy.length});
+  const updatedLikedBy = hasLiked ? likedBy.filter(id => id !== userId) : [...likedBy, userId];
+  try {
+    await postRef.update({ likedBy: updatedLikedBy, likes: updatedLikedBy.length });
     postElement.querySelector('button.like-btn').classList.toggle('liked', !hasLiked);
     postElement.querySelector('.post-likes-count').textContent = updatedLikedBy.length;
-  }catch(err){ console.error(err); alert('Failed to update like.'); }
+  } catch (err) {
+    console.error(err);
+    alert('Failed to update like.');
+  }
 }
 
+// --- CREATE POST ELEMENT ---
 async function createPostElement(doc){
   const post = doc.data();
   const postCard = document.createElement('article');
@@ -267,55 +164,49 @@ async function createPostElement(doc){
   const createdAt = post.createdAt?.toDate?.() || null;
   const formattedDate = createdAt ? createdAt.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}) : '';
 
-  // --- Автор ---
   let authorName='Unknown', authorPhoto=null;
   if(post.authorId){
-    try{
+    try {
       const u = await db.collection('users').doc(post.authorId).get();
-      if(u.exists){ 
-        const d=u.data(); 
-        authorName = (d.firstName+' '+d.lastName).trim() || 'Unknown'; 
-        authorPhoto=d.avatarUrl||null; 
+      if(u.exists){
+        const d = u.data();
+        authorName = (d.firstName+' '+d.lastName).trim() || 'Unknown';
+        authorPhoto = d.avatarUrl || null;
       }
-    }catch(e){ console.error(e); }
+    } catch(e){ console.error(e); }
   }
 
-  // --- Сообщество ---
-  let communityName = 'Unknown Community';
-  let communityLink = '#';
+  let communityName = 'Unknown Community', communityLink = '#', communityId = null;
   try {
     const communityRef = doc.ref.parent.parent;
-    if(communityRef) {
+    if(communityRef){
       const commDoc = await communityRef.get();
       if(commDoc.exists){
         const commData = commDoc.data();
         communityName = commData.name || 'Unnamed Community';
-        const communityId = commDoc.id;
+        communityId = commDoc.id;
         communityLink = `../community/community.html?id=${communityId}`;
       }
     }
   } catch(e){ console.error(e); }
 
-  // --- Вложения ---
   let attachmentsHtml='';
   if(post.attachment){
     const file = post.attachment;
-    attachmentsHtml+='<div class="post-attachments">';
+    attachmentsHtml += '<div class="post-attachments">';
     if(file.url.match(/\.(jpeg|jpg|gif|png)$/i)){
-      attachmentsHtml+=`<div class="post-images"><img src="${file.url}" alt="${file.name}"></div>`;
+      attachmentsHtml += `<div class="post-images"><img src="${file.url}" alt="${file.name}"></div>`;
     } else {
-      attachmentsHtml+=`
+      attachmentsHtml += `
 <div class="post-attachment">
-  <a href="${file.url}" target="_blank" style="text-decoration:none; color:inherit;">${file.name}</a>
+  <a href="${file.url}" target="_blank">${file.name}</a>
   <button class="download-btn" data-url="${file.url}" data-filename="${file.name}">Download</button>
 </div>`;
-
     }
-    attachmentsHtml+='</div>';
+    attachmentsHtml += '</div>';
   }
 
-  // --- HTML поста ---
-  postCard.innerHTML=`
+  postCard.innerHTML = `
   <div class="post-header">
     <div class="author-avatar-container">${authorPhoto? `<img src="${authorPhoto}" class="author-avatar-img">`:`<div class="author-initials">${authorName.split(' ').map(n=>n[0]).join('').toUpperCase()}</div>`}</div>
     <div class="post-info">
@@ -340,6 +231,12 @@ async function createPostElement(doc){
   postCard.querySelector('button.like-btn').classList.toggle('liked', post.likedBy.includes(currentUser?.uid));
   postCard.querySelector('button.like-btn').addEventListener('click', ()=>toggleLike(doc.ref, postCard.likedBy, postCard));
 
+  const replyBtn = postCard.querySelector('button.reply-btn');
+  replyBtn.addEventListener('click', ()=>{
+    if(!communityId) return alert("Community ID not found.");
+    window.location.href = `../community/comments.html?communityId=${communityId}&postId=${doc.id}`;
+  });
+
   const downloadBtn = postCard.querySelector('.download-btn');
   if(downloadBtn){
     downloadBtn.addEventListener('click', async e=>{
@@ -350,21 +247,91 @@ async function createPostElement(doc){
       const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click();
     });
   }
+
   return postCard;
 }
 
-async function loadPosts(){
-  try{
-    loadingIndicator.style.display='flex';
-    emptyState.style.display='none';
-    feedContainer.innerHTML='';
-    const snapshot = await db.collectionGroup('posts').orderBy('createdAt','desc').orderBy('likes','desc').get();
+// --- LOAD POSTS ---
+async function loadPosts() {
+  if(isLoading) return;
+  isLoading = true;
+  loadingIndicator.style.display = 'flex';
+  emptyState.style.display = 'none';
+
+  try {
+    let query = db.collectionGroup('posts')
+      .orderBy('createdAt','desc')
+      .orderBy('likes','desc')
+      .limit(postsPerPage);
+
+    if(lastVisiblePost) query = query.startAfter(lastVisiblePost);
+
+    const snapshot = await query.get();
+    loadingIndicator.style.display = 'none';
+
+    if(snapshot.empty && !lastVisiblePost){
+      emptyState.style.display = 'block';
+      return;
+    }
+
+    for(const doc of snapshot.docs){
+      if(document.getElementById(`post-${doc.id}`)) continue;
+      const postEl = await createPostElement(doc);
+      postEl.id = `post-${doc.id}`;
+      feedContainer.appendChild(postEl);
+    }
+
+    lastVisiblePost = snapshot.docs[snapshot.docs.length-1];
+  } catch(e){
     loadingIndicator.style.display='none';
-    if(snapshot.empty){ emptyState.style.display='block'; return; }
-    for(const doc of snapshot.docs){ feedContainer.appendChild(await createPostElement(doc)); }
-  }catch(e){ loadingIndicator.style.display='none'; errorContainer.style.display='block'; errorContainer.textContent='Error loading posts: '+e.message; console.error(e);}
+    errorContainer.style.display='block';
+    errorContainer.textContent='Error loading posts: '+e.message;
+    console.error(e);
+  }
+
+  isLoading=false;
 }
 
+// --- SEARCH USERS ---
+const searchInput = document.querySelector('.search-input');
+const searchResults = document.querySelector('.header-search-results');
+
+let searchTimeout=null;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(async ()=>{
+    const q = searchInput.value.trim().toLowerCase();
+    searchResults.innerHTML='';
+    if(!q) return;
+
+    try {
+      const usersSnap = await db.collection('users').get();
+      const results = usersSnap.docs
+        .map(d=>({id:d.id, ...d.data()}))
+        .filter(u => (u.firstName+' '+u.lastName).toLowerCase().includes(q))
+        .slice(0,5);
+
+      results.forEach(u=>{
+        const el = document.createElement('div');
+        el.className='search-result';
+        el.textContent = u.firstName+' '+u.lastName;
+        el.addEventListener('click', ()=>{
+          window.location.href=`../dashboard.html?uid=${u.id}`;
+        });
+        searchResults.appendChild(el);
+      });
+    } catch(e){ console.error(e); }
+  }, 300);
+});
+
+// --- SCROLL TO LOAD MORE ---
+window.addEventListener('scroll', () => {
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight-300){
+    loadPosts();
+  }
+});
+
+// --- AUTH ---
 auth.onAuthStateChanged(user=>{
   currentUser=user;
   if(user) loadPosts();

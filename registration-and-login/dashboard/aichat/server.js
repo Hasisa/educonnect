@@ -7,14 +7,18 @@ dotenv.config();
 const router = express.Router();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// ⚠ Настройки CORS для фронтенда
+const FRONTEND_URL = "https://educonnectforum.web.app";
+
 // OPTIONS для preflight
 router.options("/", (req, res) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://educonnectforum.web.app");
+  res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.sendStatus(200);
 });
 
+// POST - основной роут
 router.post("/", async (req, res) => {
   const { message } = req.body;
 
@@ -22,22 +26,24 @@ router.post("/", async (req, res) => {
 
   try {
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      // Оптимальная модель для бесплатного API
+      model: "gpt-5-mini", // можно заменить на "gpt-5-mini"
       messages: [{ role: "user", content: message }],
-      temperature: 0.7
+      temperature: 0.7,
+      max_tokens: 600, // ограничение длины ответа
     });
 
-    const reply = response.choices[0].message.content.trim();
+    const reply = response.choices?.[0]?.message?.content?.trim() || "Нет ответа от AI";
 
-    // CORS заголовки для фронтенда
-    res.setHeader("Access-Control-Allow-Origin", "https://educonnectforum.web.app");
+    // CORS заголовки
+    res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
     res.json({ reply });
   } catch (err) {
     console.error("AI chat error:", err);
-    res.status(500).json({ error: "AI chat failed" });
+    res.status(500).json({ error: `AI chat failed: ${err.message}` });
   }
 });
 
