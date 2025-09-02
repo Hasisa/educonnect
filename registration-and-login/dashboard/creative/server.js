@@ -86,35 +86,36 @@ Limit to 5 elements maximum.
 
 // --- Chart ---
 // --- Chart ---
+// --- Chart ---
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-- Choose 5 meaningful subtopics of "${topic}" as categories.
-- Assign a numeric value (10-100) to each category representing importance, difficulty, or relevance for learning.
-- Include dataset label as "${topic}".
-- Include colors for bars and borders.
-- Include chart title "${topic} - Key Metrics".
-- Output ONLY valid JSON. No explanations, no markdown.
+- Include 5-7 meaningful subtopics for this topic.
+- For each subtopic, assign a numeric value representing its importance or relevance for someone learning this topic (scale 10-100).
+- Dataset label: "${topic}".
+- Chart type: bar chart.
+- Include chart title: "${topic} - Learning Importance".
+- Output ONLY valid JSON, no explanations or markdown.
 `;
 
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7
+      temperature: 0.7,
     });
 
     const parsed = safeParseJSON(response.choices[0].message.content);
     if (parsed) return parsed;
 
-    // fallback
+    console.warn('AI returned invalid JSON for chart, using mock chart');
     return generateMockChart(topic);
-
   } catch (err) {
     console.error('Chart generation error:', err);
     return generateMockChart(topic);
   }
 }
+
 
 // --- Mock Chart (на случай ошибки) ---
 function generateMockChart(topic) {
