@@ -54,7 +54,7 @@ Generate a complete and detailed mindmap for someone to become a genius in "${to
 Branch: Main branch title
   Subtopic: Subtopic title
     Detail: One meaningful detail
-Output only in this format.
+Output ONLY in this format, NO explanations.
 `;
 
   const response = await openai.chat.completions.create({
@@ -69,8 +69,10 @@ Output only in this format.
 // --- Diagram ---
 async function generateDiagram(topic) {
   const prompt = `
-Generate a visual diagram (Excalidraw) representing the topic "${topic}".
-Output valid JSON ONLY. Do NOT include text explanations or comments.
+Generate a visual diagram for Excalidraw representing the topic "${topic}".
+Output valid JSON ONLY with objects: rectangle, ellipse, arrow, text.
+Do NOT include explanations or markdown.
+Limit to 5 elements maximum.
 `;
 
   const response = await openai.chat.completions.create({
@@ -86,7 +88,7 @@ Output valid JSON ONLY. Do NOT include text explanations or comments.
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-Output valid JSON ONLY. Do NOT include text explanations or comments.
+Output valid JSON ONLY. Do NOT include explanations or markdown.
 `;
 
   const response = await openai.chat.completions.create({
