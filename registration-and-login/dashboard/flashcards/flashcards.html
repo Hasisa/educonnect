@@ -55,7 +55,7 @@
                     ← Back to Home
                 </button>
                 <div class="progress-info">
-                    <span id="cardCounter">Card 1 of 10</span>
+                    <span id="cardCounter">No cards yet</span>
                 </div>
             </header>
 
@@ -65,13 +65,13 @@
                         <div class="flashcard-front">
                             <div class="card-label">Term</div>
                             <div id="cardTerm" class="card-content">
-                                Loading...
+                                No cards available
                             </div>
                         </div>
                         <div class="flashcard-back">
                             <div class="card-label">Definition</div>
                             <div id="cardDefinition" class="card-content">
-                                Loading...
+                                Create new cards to start learning!
                             </div>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="form-group">
                     <label for="aiPrompt">Or generate with AI</label>
-                    <input type="text" id="aiPrompt" placeholder="e.g., 'Generate a JavaScript concept'">
+                    <input type="text" id="aiPrompt" placeholder="e.g., 'Generate a physics concept'">
                     <button id="generateAIBtn" class="btn btn-ghost btn-small">Generate with AI</button>
                 </div>
             </div>
@@ -132,11 +132,9 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
         
-        // Make Firebase available globally
         window.firebaseApp = null;
         window.db = null;
         
-        // Initialize when config is loaded
         window.addEventListener('DOMContentLoaded', async () => {
             const { firebaseConfig } = await import('./firebase-config.js');
             if (firebaseConfig.apiKey) {

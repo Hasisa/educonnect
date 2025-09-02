@@ -10,14 +10,13 @@ import {
   doc, 
   setDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { db } from './firebase-config.js'; // через CDN
+import { db } from './firebase-config.js';
 
 class ChatService {
   constructor() {
     this.messagesCollection = 'messages';
     this.unsubscribe = null;
 
-    // ⚠ Токен больше не хранится на фронтенде!
     this.SERVER_URL = 'https://school-forumforschool.onrender.com/api/ai'; // адрес сервера AI
   }
 
@@ -53,7 +52,7 @@ class ChatService {
             messages.push({ id: change.doc.id, ...change.doc.data() });
           }
         });
-        if (messages.length) callback(messages); // добавляем только новые сообщения
+        if (messages.length) callback(messages); 
       });
 
       return this.unsubscribe;

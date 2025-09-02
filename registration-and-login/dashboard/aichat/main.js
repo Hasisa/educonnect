@@ -175,7 +175,10 @@ class AIAssistantApp {
     this.chatWindow.scrollTop = this.chatWindow.scrollHeight;
   }
 
-  handleBack() { this.showInfo('Back navigation would go to the main page'); }
+  handleBack() { 
+    window.location.href = "../tools/tools.html"; 
+  }
+
   showToolsModal() { this.toolsModal?.classList.remove('hidden'); }
   hideToolsModal() { this.toolsModal?.classList.add('hidden'); }
   escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
