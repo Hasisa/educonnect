@@ -6,16 +6,15 @@ import cors from "cors";
 
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const router = express.Router();
 
-// --- CORS ---
+// --- CORS для этого роутера ---
 const allowedOrigins = [
   "https://educonnectforum.web.app", // фронтенд
   "http://localhost:3000"            // локальная разработка
 ];
 
-app.use(cors({
+router.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -27,14 +26,13 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// --- JSON body parser ---
-app.use(express.json());
+router.use(express.json()); // Для парсинга JSON тела запроса
 
 // --- OpenAI ---
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// --- Route: POST /api/ai ---
-app.post("/api/ai", async (req, res) => {
+// --- POST /api/ai ---
+router.post("/", async (req, res) => {
   const { term } = req.body;
   if (!term) return res.status(400).json({ error: "Term is required" });
 
@@ -75,7 +73,5 @@ Explain the term "${term}" strictly as JSON in the following format:
   }
 });
 
-// --- Start server ---
-app.listen(PORT, () => {
-  console.log(`AI server running on port ${PORT}`);
-});
+// --- Экспорт роутера для импорта в основной сервер ---
+export default router;
