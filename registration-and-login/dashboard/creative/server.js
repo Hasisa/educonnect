@@ -2,11 +2,12 @@
 import express from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
+import JSON5 from 'json5';
 
 const router = express.Router();
 router.use(express.json());
 
-// ⚡ Настройка CORS прямо здесь
+// ⚡ Настройка CORS
 router.use(cors({
   origin: 'https://educonnectforum.web.app',
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -17,14 +18,11 @@ router.use(cors({
 // Инициализация OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Основной маршрут генерации
+// --- Основной маршрут генерации ---
 router.post('/', async (req, res) => {
   try {
     const { topic, type } = req.body;
-
-    if (!topic || !type) {
-      return res.status(400).json({ error: 'Topic and type are required' });
-    }
+    if (!topic || !type) return res.status(400).json({ error: 'Topic and type are required' });
 
     let result;
     switch (type.toLowerCase()) {
@@ -49,7 +47,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Генерация mindmap
+// --- Mindmap ---
 async function generateMindMap(topic) {
   const prompt = `
 Generate a complete and detailed mindmap for someone to become a genius in "${topic}".
@@ -68,11 +66,11 @@ Output only in this format.
   return response.choices?.[0]?.message?.content?.trim() || '⚠️ No response from AI';
 }
 
-// Генерация diagram
+// --- Diagram ---
 async function generateDiagram(topic) {
   const prompt = `
-Generate a visual diagram (for Excalidraw) representing the topic "${topic}".
-Output valid JSON with rectangles, ellipses, arrows, and text elements.
+Generate a visual diagram (Excalidraw) representing the topic "${topic}".
+Output valid JSON ONLY. Do NOT include text explanations or comments.
 `;
 
   const response = await openai.chat.completions.create({
@@ -81,19 +79,14 @@ Output valid JSON with rectangles, ellipses, arrows, and text elements.
     temperature: 0.7,
   });
 
-  try {
-    return JSON.parse(response.choices[0].message.content.trim());
-  } catch (err) {
-    console.error('Diagram parse error:', err);
-    return generateMockDiagram(topic);
-  }
+  return safeParseJSON(response.choices[0].message.content) || generateMockDiagram(topic);
 }
 
-// Генерация chart
+// --- Chart ---
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-Output JSON only.
+Output valid JSON ONLY. Do NOT include text explanations or comments.
 `;
 
   const response = await openai.chat.completions.create({
@@ -102,15 +95,20 @@ Output JSON only.
     temperature: 0.7,
   });
 
+  return safeParseJSON(response.choices[0].message.content) || generateMockChart(topic);
+}
+
+// --- Безопасный парсинг JSON ---
+function safeParseJSON(str) {
   try {
-    return JSON.parse(response.choices[0].message.content.trim());
+    return JSON5.parse(str.trim());
   } catch (err) {
-    console.error('Chart parse error:', err);
-    return generateMockChart(topic);
+    console.error('JSON parse error:', err, str);
+    return null;
   }
 }
 
-// Mock diagram
+// --- Mock Diagram ---
 function generateMockDiagram(topic) {
   return [
     { id: "1", type: "rectangle", x: 100, y: 100, width: 200, height: 100, backgroundColor: "#dbeafe", strokeColor: "#2563eb", strokeWidth: 2 },
@@ -118,7 +116,7 @@ function generateMockDiagram(topic) {
   ];
 }
 
-// Mock chart
+// --- Mock Chart ---
 function generateMockChart(topic) {
   const categories = ['Category A','Category B','Category C','Category D','Category E'];
   const values = categories.map(() => Math.floor(Math.random() * 100) + 10);
