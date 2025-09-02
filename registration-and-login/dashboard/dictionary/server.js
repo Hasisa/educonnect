@@ -42,7 +42,6 @@ Explain the term "${term}" strictly as JSON in the following format:
 {
   "term": "${term}",
   "definition": "...",
-  "formula": "...",
   "relatedTerms": ["..."]
 }
 `;
