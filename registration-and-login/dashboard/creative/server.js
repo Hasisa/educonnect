@@ -85,42 +85,40 @@ Limit to 5 elements maximum.
 }
 
 // --- Chart ---
+// --- Chart ---
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
-Output valid JSON ONLY. Do NOT include explanations or markdown.
+- Choose 5 meaningful subtopics of "${topic}" as categories.
+- Assign a numeric value (10-100) to each category representing importance, difficulty, or relevance for learning.
+- Include dataset label as "${topic}".
+- Include colors for bars and borders.
+- Include chart title "${topic} - Key Metrics".
+- Output ONLY valid JSON. No explanations, no markdown.
 `;
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.7,
-  });
-
-  return safeParseJSON(response.choices[0].message.content) || generateMockChart(topic);
-}
-
-// --- Безопасный парсинг JSON ---
-function safeParseJSON(str) {
   try {
-    return JSON5.parse(str.trim());
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7
+    });
+
+    const parsed = safeParseJSON(response.choices[0].message.content);
+    if (parsed) return parsed;
+
+    // fallback
+    return generateMockChart(topic);
+
   } catch (err) {
-    console.error('JSON parse error:', err, str);
-    return null;
+    console.error('Chart generation error:', err);
+    return generateMockChart(topic);
   }
 }
 
-// --- Mock Diagram ---
-function generateMockDiagram(topic) {
-  return [
-    { id: "1", type: "rectangle", x: 100, y: 100, width: 200, height: 100, backgroundColor: "#dbeafe", strokeColor: "#2563eb", strokeWidth: 2 },
-    { id: "2", type: "text", x: 150, y: 135, width: 100, height: 30, text: topic, fontSize: 16, textAlign: "center", verticalAlign: "middle" }
-  ];
-}
-
-// --- Mock Chart ---
+// --- Mock Chart (на случай ошибки) ---
 function generateMockChart(topic) {
-  const categories = ['Category A','Category B','Category C','Category D','Category E'];
+  const categories = ['Subtopic 1','Subtopic 2','Subtopic 3','Subtopic 4','Subtopic 5'];
   const values = categories.map(() => Math.floor(Math.random() * 100) + 10);
 
   return {
@@ -128,10 +126,11 @@ function generateMockChart(topic) {
     data: { labels: categories, datasets: [{ label: topic, data: values, backgroundColor: ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#dbeafe'], borderColor: ['#1e40af','#2563eb','#3b82f6','#60a5fa','#93c5fd'], borderWidth: 1 }] },
     options: {
       responsive: true,
-      plugins: { title: { display: true, text: `${topic} - Data Visualization`, color: '#1e293b', font: { size: 16, weight: 'bold' } }, legend: { display: true, position: 'top' } },
-      scales: { y: { beginAtZero: true, title: { display: true, text: 'Values', color: '#64748b' } }, x: { title: { display: true, text: 'Categories', color: '#64748b' } } }
+      plugins: { title: { display: true, text: `${topic} - Key Metrics`, color: '#1e293b', font: { size: 16, weight: 'bold' } }, legend: { display: true, position: 'top' } },
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'Importance / Difficulty', color: '#64748b' } }, x: { title: { display: true, text: 'Subtopics', color: '#64748b' } } }
     }
   };
 }
+
 
 export default router;
