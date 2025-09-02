@@ -46,6 +46,15 @@ router.post('/', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// --- Безопасный парсинг JSON ---
+function safeParseJSON(str) {
+  try {
+    return JSON5.parse(str.trim());
+  } catch (err) {
+    console.error('JSON parse error:', err, str);
+    return null;
+  }
+}
 
 // --- Mindmap ---
 async function generateMindMap(topic) {
