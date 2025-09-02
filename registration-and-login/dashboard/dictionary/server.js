@@ -9,14 +9,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Разрешаем CORS для фронтенда
+// --- CORS ---
 const allowedOrigins = [
-  "https://educonnectforum.web.app", // твой фронтенд
+  "https://educonnectforum.web.app", // фронтенд
   "http://localhost:3000"            // локальная разработка
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -27,12 +27,13 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.use(express.json()); // Для парсинга JSON тела запроса
+// --- JSON body parser ---
+app.use(express.json());
 
-// Инициализация OpenAI один раз
+// --- OpenAI ---
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// POST /api/ai
+// --- Route: POST /api/ai ---
 app.post("/api/ai", async (req, res) => {
   const { term } = req.body;
   if (!term) return res.status(400).json({ error: "Term is required" });
@@ -57,11 +58,9 @@ Explain the term "${term}" strictly as JSON in the following format:
     const content = response.choices[0].message.content.trim();
 
     try {
-      // Попытка парсинга как JSON
       const parsed = JSON.parse(content);
       res.json(parsed);
     } catch (err) {
-      // Если JSON невалидный, возвращаем fallback
       console.warn("Failed to parse AI response as JSON:", err, content);
       res.json({
         term,
@@ -76,7 +75,7 @@ Explain the term "${term}" strictly as JSON in the following format:
   }
 });
 
-// Запуск сервера
+// --- Start server ---
 app.listen(PORT, () => {
   console.log(`AI server running on port ${PORT}`);
 });
