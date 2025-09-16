@@ -20,7 +20,9 @@ router.options('/', (req, res) => {
 // POST endpoint для AI
 router.post('/', async (req, res) => {
   const { message } = req.body;
-  if (!message) return res.status(400).json({ error: 'Message is required' });
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
 
   try {
     const response = await fetch(API_URL, {
@@ -37,10 +39,19 @@ router.post('/', async (req, res) => {
 
     const data = await response.json();
 
+    // Если сервер вернул ошибку
     if (!response.ok) {
-      return res.status(response.status).json({ error: data.error?.message || 'OpenAI API error' });
+      if (response.status === 429) {
+        return res.status(429).json({
+          error: 'Слишком много запросов. Подождите несколько секунд и попробуйте снова.'
+        });
+      }
+      return res
+        .status(response.status)
+        .json({ error: data.error?.message || 'OpenAI API error' });
     }
 
+    // Успешный ответ
     const aiText = data.choices?.[0]?.message?.content || '⚠️ Нет ответа';
 
     // CORS заголовки для фронтенда
