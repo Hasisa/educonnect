@@ -44,6 +44,8 @@ router.post("/", async (req, res) => {
     // res.json({ response: aiResponse });
 
     // Временно возвращаем простой ответ, чтобы сервер не падал
+    process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+process.on('unhandledRejection', (reason, promise) => console.error('Unhandled Rejection at:', promise, 'reason:', reason));
     res.json({ response: "✅ Server is working, OpenAI calls are disabled for now." });
   } catch (err) {
     console.error("🔥 OpenAI API error:", err);
