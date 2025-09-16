@@ -2,6 +2,7 @@
   "name": "school-forum-ai",
   "version": "1.0.0",
   "description": "AI backend for school-forum project",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
