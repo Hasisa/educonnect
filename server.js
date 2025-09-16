@@ -1,40 +1,39 @@
-// Main server entry point for EduConnect backend
 import express from "express";
-import cors from "cors";
+import OpenAI from "openai";
+import dotenv from "dotenv";
 
-import aiRouter from "./registration-and-login/dashboard/aichat/server.js";
-import flashcardsRouter from "./registration-and-login/dashboard/flashcards/server.js";
-import quizRouter from "./registration-and-login/dashboard/quiz/server.js";
-import dictionaryRouter from "./registration-and-login/dashboard/dictionary/server.js";
-import generateRouter from "./registration-and-login/dashboard/creative/server.js";
+dotenv.config();
 
-const app = express();
+const router = express.Router();
 
-app.use(cors({
-  origin: "https://educonnectforum.web.app",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-}));
-
-app.use(express.json());
-
-app.use("/api/ai", aiRouter);
-app.use("/api/flashcards", flashcardsRouter);
-app.use("/api/quiz", quizRouter);
-app.use("/api/dictionary", dictionaryRouter);
-app.use("/api/generate", generateRouter);
-
-app.get("/", (req, res) => {
-  res.send("✅ Server is running!");
+// Создаем OpenAI клиент
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal Server Error" });
+router.post("/", async (req, res) => {
+  const { message } = req.body;
+
+  if (!message) return res.status(400).json({ error: "Message is required" });
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo", // или gpt-4o-mini
+      messages: [{ role: "user", content: message }],
+    });
+
+    const aiResponse = completion.choices[0]?.message?.content;
+
+    if (!aiResponse) {
+      console.error("❌ OpenAI returned empty response:", completion);
+      return res.status(500).json({ error: "AI returned empty response" });
+    }
+
+    res.json({ response: aiResponse });
+  } catch (err) {
+    console.error("🔥 OpenAI API error:", err);
+    res.status(500).json({ error: "AI chat failed" });
+  }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+export default router;
