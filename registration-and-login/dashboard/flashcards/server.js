@@ -18,16 +18,16 @@ router.options('/', (req, res) => {
 
 // POST endpoint для AI (объяснение как флэшкарта)
 router.post('/', async (req, res) => {
-  const { topic } = req.body;
+  const topic = req.body.topic?.trim();
   if (!topic) return res.status(400).json({ error: 'Topic is required' });
 
   try {
     const prompt = `
-      Explain the topic "${topic}" as a flashcard:
-      - Give a clear question.
-      - Provide a concise answer.
-      - Keep it short and easy to memorize.
-    `;
+Explain the topic "${topic}" as a flashcard:
+- Give a clear question.
+- Provide a concise answer.
+- Keep it short and easy to memorize.
+    `.trim();
 
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -44,14 +44,18 @@ router.post('/', async (req, res) => {
 
     const data = await response.json();
 
+    // Логируем для отладки
+    console.log('OpenAI raw response:', data);
+
     if (!response.ok) {
       return res
         .status(response.status)
         .json({ error: data.error?.message || 'OpenAI API error' });
     }
 
-    const aiText = data.choices?.[0]?.message?.content || '⚠️ Нет ответа';
+    const aiText = data.choices?.[0]?.message?.content?.trim() || '⚠️ Нет ответа';
 
+    // CORS заголовки для фронтенда
     res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
