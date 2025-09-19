@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const router = express.Router();
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
@@ -17,14 +16,19 @@ router.options('/', (req, res) => {
   res.sendStatus(200);
 });
 
-// POST endpoint для AI
+// POST endpoint для AI (объяснение как флэшкарта)
 router.post('/', async (req, res) => {
-  const { message } = req.body;
-  if (!message) {
-    return res.status(400).json({ error: 'Message is required' });
-  }
+  const { topic } = req.body;
+  if (!topic) return res.status(400).json({ error: 'Topic is required' });
 
   try {
+    const prompt = `
+      Explain the topic "${topic}" as a flashcard:
+      - Give a clear question.
+      - Provide a concise answer.
+      - Keep it short and easy to memorize.
+    `;
+
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -33,33 +37,26 @@ router.post('/', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        messages: [{ role: 'user', content: message }]
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7
       })
     });
 
     const data = await response.json();
 
-    // Если сервер вернул ошибку
     if (!response.ok) {
-      if (response.status === 429) {
-        return res.status(429).json({
-          error: 'Слишком много запросов. Подождите несколько секунд и попробуйте снова.'
-        });
-      }
       return res
         .status(response.status)
         .json({ error: data.error?.message || 'OpenAI API error' });
     }
 
-    // Успешный ответ
     const aiText = data.choices?.[0]?.message?.content || '⚠️ Нет ответа';
 
-    // CORS заголовки для фронтенда
     res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    res.json({ response: aiText });
+    res.json({ flashcard: aiText });
 
   } catch (err) {
     console.error('❌ AI server error:', err.message);
