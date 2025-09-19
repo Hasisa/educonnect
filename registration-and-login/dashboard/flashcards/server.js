@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const router = express.Router();
+
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
@@ -16,19 +17,14 @@ router.options('/', (req, res) => {
   res.sendStatus(200);
 });
 
-// POST endpoint для AI (объяснение как флэшкарта)
+// POST endpoint для AI
 router.post('/', async (req, res) => {
-  const topic = req.body.topic?.trim();
-  if (!topic) return res.status(400).json({ error: 'Topic is required' });
+  const { message } = req.body;
+  if (!message) {
+    return res.status(400).json({ error: 'Message is required' });
+  }
 
   try {
-    const prompt = `
-Explain the topic "${topic}" as a flashcard:
-- Give a clear question.
-- Provide a concise answer.
-- Keep it short and easy to memorize.
-    `.trim();
-
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -37,30 +33,33 @@ Explain the topic "${topic}" as a flashcard:
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7
+        messages: [{ role: 'user', content: message }]
       })
     });
 
     const data = await response.json();
 
-    // Логируем для отладки
-    console.log('OpenAI raw response:', data);
-
+    // Если сервер вернул ошибку
     if (!response.ok) {
+      if (response.status === 429) {
+        return res.status(429).json({
+          error: 'Слишком много запросов. Подождите несколько секунд и попробуйте снова.'
+        });
+      }
       return res
         .status(response.status)
         .json({ error: data.error?.message || 'OpenAI API error' });
     }
 
-    const aiText = data.choices?.[0]?.message?.content?.trim() || '⚠️ Нет ответа';
+    // Успешный ответ
+    const aiText = data.choices?.[0]?.message?.content || '⚠️ Нет ответа';
 
     // CORS заголовки для фронтенда
     res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-    res.json({ flashcard: aiText });
+    res.json({ response: aiText });
 
   } catch (err) {
     console.error('❌ AI server error:', err.message);
