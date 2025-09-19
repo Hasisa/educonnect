@@ -7,25 +7,33 @@ import JSON5 from 'json5';
 const router = express.Router();
 router.use(express.json());
 
-// ⚡ Настройка CORS
+// ⚡ CORS для фронтенда
 router.use(cors({
   origin: 'https://educonnectforum.web.app',
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET','POST','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization'],
   credentials: true
 }));
+
+// OPTIONS preflight
+router.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
+  res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.sendStatus(200);
+});
 
 // Инициализация OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// --- Основной маршрут генерации ---
+// --- POST endpoint для генерации ---
 router.post('/', async (req, res) => {
   try {
     const { topic, type } = req.body;
     if (!topic || !type) return res.status(400).json({ error: 'Topic and type are required' });
 
     let result;
-    switch (type.toLowerCase()) {
+    switch(type.toLowerCase()) {
       case 'mindmap':
         result = await generateMindMap(topic);
         break;
@@ -41,12 +49,13 @@ router.post('/', async (req, res) => {
 
     res.json({ result });
 
-  } catch (error) {
-    console.error('Generation error:', error);
+  } catch (err) {
+    console.error('Generation error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-// --- Безопасный парсинг JSON ---
+
+// --- Safe JSON parse ---
 function safeParseJSON(str) {
   try {
     return JSON5.parse(str.trim());
@@ -67,9 +76,9 @@ Output ONLY in this format, NO explanations.
 `;
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4.1-mini',
+    model: 'gpt-3.5-turbo',
     messages: [{ role: 'user', content: prompt }],
-    temperature: 0.7,
+    temperature: 0.7
   });
 
   return response.choices?.[0]?.message?.content?.trim() || '⚠️ No response from AI';
@@ -85,22 +94,20 @@ Limit to 5 elements maximum.
 `;
 
   const response = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-3.5-turbo',
     messages: [{ role: 'user', content: prompt }],
-    temperature: 0.7,
+    temperature: 0.7
   });
 
   return safeParseJSON(response.choices[0].message.content) || generateMockDiagram(topic);
 }
 
 // --- Chart ---
-// --- Chart ---
-// --- Chart ---
 async function generateChart(topic) {
   const prompt = `
 Generate a Chart.js configuration (JSON) for the topic "${topic}".
 - Include 5-7 meaningful subtopics for this topic.
-- For each subtopic, assign a numeric value representing its importance or relevance for someone learning this topic (scale 10-100).
+- For each subtopic, assign a numeric value representing its importance or relevance (10-100).
 - Dataset label: "${topic}".
 - Chart type: bar chart.
 - Include chart title: "${topic} - Learning Importance".
@@ -109,38 +116,41 @@ Generate a Chart.js configuration (JSON) for the topic "${topic}".
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
+      temperature: 0.7
     });
 
     const parsed = safeParseJSON(response.choices[0].message.content);
-    if (parsed) return parsed;
+    return parsed || generateMockChart(topic);
 
-    console.warn('AI returned invalid JSON for chart, using mock chart');
-    return generateMockChart(topic);
   } catch (err) {
     console.error('Chart generation error:', err);
     return generateMockChart(topic);
   }
 }
 
+// --- Mock Diagram ---
+function generateMockDiagram(topic) {
+  return [
+    { type: 'rectangle', x: 50, y: 50, width: 100, height: 50, text: `${topic} Main` },
+    { type: 'ellipse', x: 200, y: 50, width: 80, height: 50, text: 'Sub 1' },
+    { type: 'ellipse', x: 200, y: 150, width: 80, height: 50, text: 'Sub 2' },
+    { type: 'arrow', start: {x: 150, y: 75}, end: {x: 200, y: 75} },
+    { type: 'arrow', start: {x: 150, y: 75}, end: {x: 200, y: 175} }
+  ];
+}
 
-// --- Mock Chart (на случай ошибки) ---
+// --- Mock Chart ---
 function generateMockChart(topic) {
   const categories = ['Subtopic 1','Subtopic 2','Subtopic 3','Subtopic 4','Subtopic 5'];
-  const values = categories.map(() => Math.floor(Math.random() * 100) + 10);
+  const values = categories.map(() => Math.floor(Math.random() * 90) + 10);
 
   return {
     type: 'bar',
-    data: { labels: categories, datasets: [{ label: topic, data: values, backgroundColor: ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#dbeafe'], borderColor: ['#1e40af','#2563eb','#3b82f6','#60a5fa','#93c5fd'], borderWidth: 1 }] },
-    options: {
-      responsive: true,
-      plugins: { title: { display: true, text: `${topic} - Key Metrics`, color: '#1e293b', font: { size: 16, weight: 'bold' } }, legend: { display: true, position: 'top' } },
-      scales: { y: { beginAtZero: true, title: { display: true, text: 'Importance / Difficulty', color: '#64748b' } }, x: { title: { display: true, text: 'Subtopics', color: '#64748b' } } }
-    }
+    data: { labels: categories, datasets: [{ label: topic, data: values, backgroundColor: ['#2563eb','#3b82f6','#60a5fa','#93c5fd','#dbeafe'] }] },
+    options: { responsive: true, plugins: { title: { display: true, text: `${topic} - Key Metrics` } } }
   };
 }
-
 
 export default router;
