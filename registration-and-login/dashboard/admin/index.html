@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <!-- Admin Dashboard -->
+    <div id="admin-dashboard" class="dashboard-container">
+      <header class="dashboard-header">
+        <h1 class="dashboard-title">⚡ Admin Dashboard</h1>
+      </header>
+
+      <main class="dashboard-main">
+        <div class="dashboard-grid">
+          <!-- Users Card -->
+         <div class="dashboard-card" onclick="window.location.href='admin-users.html'">
+  <div class="card-icon users-icon">
+    <i data-lucide="users"></i>
+  </div>
+  <div class="card-content">
+    <h3 class="card-title">Users</h3>
+    <p class="card-description">Manage user accounts, roles, and permissions</p>
+  </div>
+  <button class="card-button">
+    Manage Users
+    <i data-lucide="arrow-right"></i>
+  </button>
+</div>
+
+
+          <!-- Content Card -->
+          <div class="dashboard-card" onclick="navigateToSection('content')">
+            <div class="card-icon content-icon">
+              <i data-lucide="file-text"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title">Content</h3>
+              <p class="card-description">Create, edit, and manage website content</p>
+            </div>
+            <button class="card-button">
+              Manage Content
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Statistics Card -->
+          <div class="dashboard-card" onclick="navigateToSection('statistics')">
+            <div class="card-icon stats-icon">
+              <i data-lucide="bar-chart-3"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title">Statistics</h3>
+              <p class="card-description">View analytics and performance metrics</p>
+            </div>
+            <button class="card-button">
+              View Analytics
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+
+          <!-- Settings Card -->
+          <div class="dashboard-card" onclick="navigateToSection('settings')">
+            <div class="card-icon settings-icon">
+              <i data-lucide="settings"></i>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title">Settings</h3>
+              <p class="card-description">Configure system settings and preferences</p>
+            </div>
+            <button class="card-button">
+              Open Settings
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

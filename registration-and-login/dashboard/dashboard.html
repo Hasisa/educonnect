@@ -78,6 +78,13 @@
       font-weight: bold; font-size: 1.1rem; user-select: none; flex-shrink: 0;
     }
     .search-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    /* Admin button */
+    #admin-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin-left: 16px;
+    }
   </style>
 </head>
 <body>
@@ -97,7 +104,7 @@
           <a href="./materials/materials.html" class="nav-link">Lesson Categories</a>
           <a href="./communities/communities.html" class="nav-link">Communities</a>
           <a href="dashboard.html" class="nav-link active">Dashboard</a>
-          <a href="./tools/tools.html" class ="nav-link">Tools</a>
+          <a href="./tools/tools.html" class="nav-link">Tools</a>
         </nav>
         <div class="header-actions">
           <div class="search-container">
@@ -107,6 +114,13 @@
               <path d="m21 21-4.35-4.35"></path>
             </svg>
           </div>
+          <!-- Admin settings button -->
+          <button id="admin-btn" title="Admin Panel" class="hidden">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 8v4l2 2"></path>
+            </svg>
+          </button>
         </div>
       </div>
     </header>
@@ -231,7 +245,6 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
     const db = firebase.firestore();
 
@@ -250,6 +263,7 @@
     const searchInput = document.querySelector('.search-input');
     const searchResults = document.getElementById('search-results');
     const saveStatus = document.getElementById('save-status');
+    const adminBtn = document.getElementById('admin-btn');
 
     let currentUser = null;
     let searchTimeout = null;
@@ -400,14 +414,37 @@
       searchTimeout = setTimeout(() => searchUsersByName(query), 300);
     });
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loadUserData(getUidFromUrl());
-      } else {
-        loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
-      }
-    });
+
+
+adminBtn.addEventListener('click', () => {
+  window.location.href = './admin/index.html'; // путь к админскому дашборду
+});
+
+async function checkAdmin(user) {
+  if (!user) return;
+  try {
+    const docSnap = await db.collection('users').doc(user.uid).get();
+    const data = docSnap.data();
+
+    // проверка именно boolean поля admin
+    if (data && data.admin === true) {
+      adminBtn.classList.remove('hidden'); // показываем кнопку
+    }
+  } catch (err) {
+    console.error('Error checking admin field:', err);
+  }
+}
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    loadUserData(getUidFromUrl());
+    checkAdmin(user); // проверяем админа
+  } else {
+    loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
+  }
+});
+
   </script>
 </body>
 </html>
