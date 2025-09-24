@@ -78,7 +78,6 @@
       font-weight: bold; font-size: 1.1rem; user-select: none; flex-shrink: 0;
     }
     .search-avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    /* Admin button */
     #admin-btn {
       background: none;
       border: none;
@@ -88,13 +87,11 @@
   </style>
 </head>
 <body>
-  <!-- Loading Screen -->
   <div id="loading-screen" class="loading-screen">
     <div class="spinner"></div>
     <p>Loading your dashboard...</p>
   </div>
 
-  <!-- Dashboard -->
   <div id="dashboard" class="dashboard hidden">
     <header class="header">
       <div class="header-content">
@@ -114,7 +111,6 @@
               <path d="m21 21-4.35-4.35"></path>
             </svg>
           </div>
-          <!-- Admin settings button -->
           <button id="admin-btn" title="Admin Panel" class="hidden">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="10"></circle>
@@ -153,67 +149,60 @@
                   <label>Email</label>
                   <div class="email-display"><span id="user-email">Loading...</span></div>
                 </div>
-
                 <div class="info-group">
                   <label>Class</label>
                   <div class="select-container">
                     <select id="user-class" class="select-input">
                       <option value="">Select your class...</option>
-                      <option value="freshman">10A1</option>
-                      <option value="sophomore">10A2</option>
-                      <option value="junior">10A3</option>
-                      <option value="senior">10A4</option>
-                      <option value="graduate">10A5</option>
-                      <option value="faculty">10A6</option>
-                      <option value="faculty">10A7</option>
-                      <option value="faculty">10B1</option>
-                      <option value="faculty">10B2</option>
-                      <option value="faculty">10B3</option>
-                      <option value="faculty">10IB2</option>
+                      <option value="10A1">10A1</option>
+                      <option value="10A2">10A2</option>
+                      <option value="10A3">10A3</option>
+                      <option value="10A4">10A4</option>
+                      <option value="10A5">10A5</option>
+                      <option value="10A6">10A6</option>
+                      <option value="10A7">10A7</option>
+                      <option value="10B1">10B1</option>
+                      <option value="10B2">10B2</option>
+                      <option value="10B3">10B3</option>
+                      <option value="10IB2">10IB2</option>
                     </select>
                   </div>
                 </div>
-                
                 <div class="info-group">
                   <label>Clubs (Select up to 2)</label>
                   <div class="clubs-container">
-                    <div class="select-container">
-                      <select id="user-club1" class="select-input">
-                        <option value="">Select first club...</option>
-                        <option value="debate">Debate Club</option>
-                        <option value="chess">Chess Club</option>
-                        <option value="drama">Drama Club</option>
-                        <option value="music">Music Club</option>
-                        <option value="art">Art Club</option>
-                        <option value="science">Science Club</option>
-                        <option value="robotics">Robotics Club</option>
-                        <option value="photography">Photography Club</option>
-                        <option value="writing">Writing Club</option>
-                        <option value="volunteer">Volunteer Club</option>
-                        <option value="sports">Sports Club</option>
-                        <option value="coding">Coding Club</option>
-                      </select>
-                    </div>
-                    <div class="select-container">
-                      <select id="user-club2" class="select-input">
-                        <option value="">Select second club...</option>
-                        <option value="debate">Debate Club</option>
-                        <option value="chess">Chess Club</option>
-                        <option value="drama">Drama Club</option>
-                        <option value="music">Music Club</option>
-                        <option value="art">Art Club</option>
-                        <option value="science">Science Club</option>
-                        <option value="robotics">Robotics Club</option>
-                        <option value="photography">Photography Club</option>
-                        <option value="writing">Writing Club</option>
-                        <option value="volunteer">Volunteer Club</option>
-                        <option value="sports">Sports Club</option>
-                        <option value="coding">Coding Club</option>
-                      </select>
-                    </div>
+                    <select id="user-club1" class="select-input">
+                      <option value="">Select first club...</option>
+                      <option value="debate">Debate Club</option>
+                      <option value="chess">Chess Club</option>
+                      <option value="drama">Drama Club</option>
+                      <option value="music">Music Club</option>
+                      <option value="art">Art Club</option>
+                      <option value="science">Science Club</option>
+                      <option value="robotics">Robotics Club</option>
+                      <option value="photography">Photography Club</option>
+                      <option value="writing">Writing Club</option>
+                      <option value="volunteer">Volunteer Club</option>
+                      <option value="sports">Sports Club</option>
+                      <option value="coding">Coding Club</option>
+                    </select>
+                    <select id="user-club2" class="select-input">
+                      <option value="">Select second club...</option>
+                      <option value="debate">Debate Club</option>
+                      <option value="chess">Chess Club</option>
+                      <option value="drama">Drama Club</option>
+                      <option value="music">Music Club</option>
+                      <option value="art">Art Club</option>
+                      <option value="science">Science Club</option>
+                      <option value="robotics">Robotics Club</option>
+                      <option value="photography">Photography Club</option>
+                      <option value="writing">Writing Club</option>
+                      <option value="volunteer">Volunteer Club</option>
+                      <option value="sports">Sports Club</option>
+                      <option value="coding">Coding Club</option>
+                    </select>
                   </div>
                 </div>
-                
                 <div class="info-group">
                   <label>Description</label>
                   <div class="description-container">
@@ -364,49 +353,70 @@
     club1Select.addEventListener('change', saveUserData);
     club2Select.addEventListener('change', saveUserData);
 
-    async function searchUsersByName(name) {
-      if (!name) {
-        searchResults.innerHTML = '';
-        return;
-      }
-      try {
-        const usersRef = db.collection('users');
-        const queryRef = usersRef.orderBy('firstName').startAt(name).endAt(name + '\uf8ff').limit(10);
-        const snapshot = await queryRef.get();
+ async function searchUsersByName(name) {
+  const query = name.trim().toLowerCase();
 
-        if (snapshot.empty) {
-          searchResults.innerHTML = '<div style="padding:8px;">No users found</div>';
-          return;
-        }
+  if (!query) {
+    searchResults.innerHTML = '';
+    return;
+  }
 
-        let html = '';
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const fullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Unnamed User';
-          const email = data.email || '';
-          const avatarUrl = data.avatarUrl || '';
-
-          if (avatarUrl) {
-            html += `<div data-uid="${doc.id}"><img src="${avatarUrl}" class="search-avatar-img" /><div><strong>${fullName}</strong><br/><small>${email}</small></div></div>`;
-          } else {
-            const initials = getInitials(fullName);
-            html += `<div data-uid="${doc.id}"><div class="search-avatar-fallback">${initials}</div><div><strong>${fullName}</strong><br/><small>${email}</small></div></div>`;
-          }
-        });
-
-        searchResults.innerHTML = html;
-        searchResults.querySelectorAll('div[data-uid]').forEach(item => {
-          item.addEventListener('click', () => {
-            const uid = item.getAttribute('data-uid');
-            window.location.href = `dashboard.html?uid=${uid}`;
-          });
-        });
-
-      } catch (error) {
-        console.error('Search error:', error);
-        searchResults.innerHTML = '<div style="padding:8px;">Error searching users</div>';
-      }
+  try {
+    const snapshot = await db.collection('users').get(); // берём всех пользователей
+    if (snapshot.empty) {
+      searchResults.innerHTML = '<div style="padding:8px;">No users found</div>';
+      return;
     }
+
+    let html = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const firstName = (data.firstName || '').trim().toLowerCase();
+      const lastName = (data.lastName || '').trim().toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+      const displayFullName = `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Unnamed User';
+      const email = data.email || '';
+      const avatarUrl = data.avatarUrl || '';
+
+      // поиск по firstName, lastName или полной строке
+      if (
+        firstName.includes(query) ||
+        lastName.includes(query) ||
+        fullName.includes(query)
+      ) {
+        if (avatarUrl) {
+          html += `
+            <div data-uid="${doc.id}">
+              <img src="${avatarUrl}" class="search-avatar-img" />
+              <div><strong>${displayFullName}</strong><br/><small>${email}</small></div>
+            </div>`;
+        } else {
+          const initials = getInitials(displayFullName);
+          html += `
+            <div data-uid="${doc.id}">
+              <div class="search-avatar-fallback">${initials}</div>
+              <div><strong>${displayFullName}</strong><br/><small>${email}</small></div>
+            </div>`;
+        }
+      }
+    });
+
+    if (!html) html = '<div style="padding:8px;">No users found</div>';
+    searchResults.innerHTML = html;
+
+    searchResults.querySelectorAll('div[data-uid]').forEach(item => {
+      item.addEventListener('click', () => {
+        const uid = item.getAttribute('data-uid');
+        window.location.href = `dashboard.html?uid=${uid}`;
+      });
+    });
+
+  } catch (error) {
+    console.error('Search error:', error);
+    searchResults.innerHTML = '<div style="padding:8px;">Error searching users</div>';
+  }
+}
+
 
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.trim();
@@ -414,37 +424,32 @@
       searchTimeout = setTimeout(() => searchUsersByName(query), 300);
     });
 
+    adminBtn.addEventListener('click', () => {
+      window.location.href = './admin/index.html';
+    });
 
-
-adminBtn.addEventListener('click', () => {
-  window.location.href = './admin/index.html'; // путь к админскому дашборду
-});
-
-async function checkAdmin(user) {
-  if (!user) return;
-  try {
-    const docSnap = await db.collection('users').doc(user.uid).get();
-    const data = docSnap.data();
-
-    // проверка именно boolean поля admin
-    if (data && data.admin === true) {
-      adminBtn.classList.remove('hidden'); // показываем кнопку
+    async function checkAdmin(user) {
+      if (!user) return;
+      try {
+        const docSnap = await db.collection('users').doc(user.uid).get();
+        const data = docSnap.data();
+        if (data && data.admin === true) {
+          adminBtn.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('Error checking admin field:', err);
+      }
     }
-  } catch (err) {
-    console.error('Error checking admin field:', err);
-  }
-}
 
-auth.onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    loadUserData(getUidFromUrl());
-    checkAdmin(user); // проверяем админа
-  } else {
-    loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
-  }
-});
-
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadUserData(getUidFromUrl());
+        checkAdmin(user);
+      } else {
+        loadingScreen.innerHTML = '<p>Please log in to view the dashboard</p>';
+      }
+    });
   </script>
 </body>
 </html>

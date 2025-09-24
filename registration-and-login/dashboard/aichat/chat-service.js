@@ -38,29 +38,50 @@ class ChatService {
   }
 
   loadChatHistory(userId, callback) {
-    try {
-      const q = query(
-        collection(db, this.messagesCollection),
-        where('userId', '==', userId),
-        orderBy('timestamp', 'asc')
-      );
+  try {
+    const q = query(
+      collection(db, this.messagesCollection),
+      where('userId', '==', userId),
+      orderBy('timestamp', 'asc')
+    );
 
-      this.unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const messages = [];
-        querySnapshot.docChanges().forEach(change => {
-          if (change.type === "added") {
-            messages.push({ id: change.doc.id, ...change.doc.data() });
-          }
-        });
-        if (messages.length) callback(messages); 
+    if (this.unsubscribe) this.unsubscribe(); // отписка от старой подписки
+
+    let initialLoadDone = false;
+
+    this.unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const messages = [];
+
+      querySnapshot.docChanges().forEach(change => {
+        const msg = { id: change.doc.id, ...change.doc.data() };
+        if (change.type === "added") messages.push(msg);
       });
 
-      return this.unsubscribe;
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-      callback([]);
-    }
+      if (!initialLoadDone) {
+        // первичная загрузка — передаем массив
+        callback(messages);
+        initialLoadDone = true;
+      } else {
+        // последующие изменения — по одному
+        messages.forEach(msg => callback(msg));
+      }
+    });
+
+    return () => {
+      if (this.unsubscribe) {
+        this.unsubscribe();
+        this.unsubscribe = null;
+      }
+    };
+  } catch (error) {
+    console.error('Error loading chat history:', error);
+    callback(null);
+    return () => {};
   }
+}
+
+
+
 
   unsubscribeFromChatHistory() {
     if (this.unsubscribe) {

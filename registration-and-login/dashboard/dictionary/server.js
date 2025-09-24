@@ -44,6 +44,7 @@ Explain the term "${term}" strictly as JSON in the following format:
   "definition": "...",
   "relatedTerms": ["..."]
 }
+  and only with human words,no code or markup
 `;
 
     const response = await openai.chat.completions.create({
