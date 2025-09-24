@@ -24,6 +24,10 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Message is required' });
   }
 
+  const prompt = `
+Explain the term "${message}" in terms of flashcards without any code or markup.
+`;
+
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -33,7 +37,7 @@ router.post('/', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        messages: [{ role: 'user', content: message }]
+        messages: [{ role: 'user', content: prompt }]
       })
     });
 
