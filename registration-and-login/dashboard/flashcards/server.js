@@ -1,21 +1,20 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config();
 
 const router = express.Router();
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
-// OPTIONS preflight для CORS
-router.options('/', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.sendStatus(200);
-});
+// Настройка CORS для фронтенда
+router.use(cors({
+  origin: 'https://educonnectforum.web.app',
+  methods: ['POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // POST endpoint для AI
 router.post('/', async (req, res) => {
@@ -26,6 +25,10 @@ router.post('/', async (req, res) => {
 
   const prompt = `
 Explain the term "${message}" in terms of flashcards without any code or markup.
+Provide the answer as:
+- Term: ...
+- Definition: ...
+- Key points: ...
 `;
 
   try {
@@ -41,28 +44,22 @@ Explain the term "${message}" in terms of flashcards without any code or markup.
       })
     });
 
-    const data = await response.json();
-
-    // Если сервер вернул ошибку
-    if (!response.ok) {
-      if (response.status === 429) {
-        return res.status(429).json({
-          error: 'Слишком много запросов. Подождите несколько секунд и попробуйте снова.'
-        });
-      }
-      return res
-        .status(response.status)
-        .json({ error: data.error?.message || 'OpenAI API error' });
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      return res.status(500).json({ error: 'Invalid response from OpenAI' });
     }
 
-    // Успешный ответ
-    const aiText = data.choices?.[0]?.message?.content || '⚠️ Нет ответа';
+    if (!response.ok) {
+      const errorMessage = data.error?.message || 'OpenAI API error';
+      if (response.status === 429) {
+        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+      }
+      return res.status(response.status).json({ error: errorMessage });
+    }
 
-    // CORS заголовки для фронтенда
-    res.setHeader('Access-Control-Allow-Origin', 'https://educonnectforum.web.app');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
+    const aiText = data.choices?.[0]?.message?.content || '⚠️ No response';
     res.json({ response: aiText });
 
   } catch (err) {
