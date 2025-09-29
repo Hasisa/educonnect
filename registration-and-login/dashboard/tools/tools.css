@@ -49,7 +49,20 @@ body {
   margin-bottom: 3rem;
   animation: fadeInDown 0.8s ease-out;
 }
+.back-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: var(--border-radius-sm);
+  color: var(--gray-900);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1.2rem;
+}
 
+.back-btn:hover {
+  background: var(--secondary-blue);
+}
 .header-title {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 700;

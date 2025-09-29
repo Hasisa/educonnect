@@ -6,6 +6,15 @@
   <title>EduConnect – Azerbaijani School Forum & Community</title>
   <meta name="description" content="EduConnect - Join school communities, share knowledge and your skills" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LWPMR1LFFS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-LWPMR1LFFS');
+</script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -152,7 +161,7 @@
       <div class="form-group">
         <label class="checkbox-label">
           <input type="checkbox" id="termsCheckbox" />
-          <span>I agree to the <a href="https://educonnect-958e2.web.app/terms.html" target="_blank">Terms and Conditions</a></span>
+          <span>I agree to the <a href="terms.html" target="_blank">Terms and Conditions</a></span>
         </label>
         <span class="error-message" id="termsError"></span>
       </div>
@@ -281,20 +290,42 @@ document.addEventListener("DOMContentLoaded", () => {
       const user = userCredential.user;
 
       await setDoc(doc(db,"users",user.uid),{
-        firstName: firstNameInput.value.trim(),
-        lastName: lastNameInput.value.trim(),
-        email: emailInput.value.trim(),
-        avatarUrl: uploadedAvatarURL
-      });
+      firstName: firstNameInput.value.trim(),
+      lastName: lastNameInput.value.trim(),
+      email: emailInput.value.trim(),
+      avatarUrl: uploadedAvatarURL,
+      searchName: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`.toLowerCase() // <-- новое поле для поиска
+});
+
 
       messageBox.style.color = "green";
       messageBox.textContent = "Registration successful! Redirecting...";
       setTimeout(()=>window.location.href="./dashboard/dashboard.html",1200);
-    } catch(err) {
-      messageBox.style.color="red";
-      messageBox.textContent = "Error: "+err.message;
-    } finally { submitBtn.disabled=false; }
-  });
+    } catch (err) {
+    messageBox.style.color = "red";
+    switch (err.code) {
+      case "auth/email-already-in-use":
+        emailError.textContent = "⚠️ This email is already registered.";
+        break;
+      case "auth/invalid-email":
+        emailError.textContent = "⚠️ Please provide a valid email address.";
+        break;
+      case "auth/weak-password":
+        passwordError.textContent = "⚠️ Password is too weak (use letters, numbers, and symbols).";
+        break;
+      case "auth/network-request-failed":
+        messageBox.textContent = "⚠️ Network error. Please check your connection.";
+        break;
+      case "auth/too-many-requests":
+        messageBox.textContent = "⚠️ Too many attempts. Please try again later.";
+        break;
+      default:
+        messageBox.textContent = "⚠️ Unexpected error: " + err.message;
+    }
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
 
 });
 </script>

@@ -63,12 +63,6 @@
   }
   .download-btn:hover { background-color: #2563eb; }
 
-  /* --- Результаты поиска --- */
-  .header-search-results {
-    position: absolute; background: #fff; border: 1px solid #ddd; max-height: 300px; overflow-y: auto; width: 300px; z-index: 10;
-  }
-  .header-search-results .search-result { padding: 8px 12px; cursor: pointer; }
-  .header-search-results .search-result:hover { background: #f3f4f6; }
 </style>
 </head>
 <body>
@@ -89,11 +83,12 @@
                 d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"/>
         </svg>
         <input type="text" placeholder="Search users by name..." class="search-input"/>
+        <div class="header-search-results"></div>
       </div>
     </div>
   </div>
 </header>
-<div class="header-search-results"></div>
+
 
 <main class="container" role="main">
   <div class="header-section">
@@ -293,7 +288,7 @@ async function loadPosts() {
 }
 
 // --- SEARCH USERS ---
-const searchInput = document.querySelector('.search-container');
+const searchInput = document.querySelector('.search-container input'); 
 const searchResults = document.querySelector('.header-search-results');
 
 let searchTimeout=null;
@@ -302,26 +297,92 @@ searchInput.addEventListener('input', () => {
   searchTimeout = setTimeout(async ()=>{
     const q = searchInput.value.trim().toLowerCase();
     searchResults.innerHTML='';
-    if(!q) return;
+    if(!q) { 
+      searchResults.style.display='none'; 
+      return; 
+    }
 
     try {
       const usersSnap = await db.collection('users').get();
       const results = usersSnap.docs
-        .map(d=>({id:d.id, ...d.data()}))
-        .filter(u => (u.firstName+' '+u.lastName).toLowerCase().includes(q))
+        .map(d => ({id: d.id, ...d.data()}))
+        .filter(u => ((u.firstName || '') + ' ' + (u.lastName || '')).toLowerCase().includes(q))
         .slice(0,5);
 
-      results.forEach(u=>{
-        const el = document.createElement('div');
-        el.className='search-result';
-        el.textContent = u.firstName+' '+u.lastName;
-        el.addEventListener('click', ()=>{
-          window.location.href=`../dashboard.html?uid=${u.id}`;
-        });
-        searchResults.appendChild(el);
-      });
-    } catch(e){ console.error(e); }
-  }, 300);
+      if(results.length) searchResults.style.display = 'block';
+      else searchResults.style.display = 'none';
+results.forEach(u => {
+  const el = document.createElement('div');
+  el.className = 'search-result';
+  el.style.display = 'flex';
+  el.style.alignItems = 'center';
+  el.style.gap = '8px'; // расстояние между аватаром и текстом
+  el.style.padding = '4px 8px';
+  el.style.cursor = 'pointer';
+  el.style.borderRadius = '6px';
+  el.addEventListener('mouseenter', () => el.style.backgroundColor = '#f0f0f0');
+  el.addEventListener('mouseleave', () => el.style.backgroundColor = 'transparent');
+
+  // аватар или инициалы
+  let avatarEl;
+  if (u.avatarUrl) {
+    avatarEl = document.createElement('img');
+    avatarEl.src = u.avatarUrl;
+    avatarEl.style.width = '32px';
+    avatarEl.style.height = '32px';
+    avatarEl.style.borderRadius = '50%';
+    avatarEl.style.objectFit = 'cover';
+  } else {
+    avatarEl = document.createElement('div');
+    avatarEl.textContent = ((u.firstName || '')[0] || '') + ((u.lastName || '')[0] || '');
+    avatarEl.style.width = '32px';
+    avatarEl.style.height = '32px';
+    avatarEl.style.borderRadius = '50%';
+    avatarEl.style.background = '#888';
+    avatarEl.style.color = '#fff';
+    avatarEl.style.display = 'flex';
+    avatarEl.style.alignItems = 'center';
+    avatarEl.style.justifyContent = 'center';
+    avatarEl.style.fontWeight = 'bold';
+  }
+
+  // текст: имя и email в одной строке
+  const textContainer = document.createElement('div');
+  textContainer.style.display = 'flex';
+  textContainer.style.alignItems = 'center';
+  textContainer.style.gap = '6px';
+
+  const nameEl = document.createElement('span');
+  nameEl.textContent = (u.firstName || '') + ' ' + (u.lastName || '');
+  nameEl.style.fontWeight = '600';
+  nameEl.style.color = '#111';
+  nameEl.style.fontSize = '14px';
+
+  const emailEl = document.createElement('span');
+  emailEl.textContent = u.email || '';
+  emailEl.style.fontWeight = '400';
+  emailEl.style.color = '#6b7280'; // светлее
+  emailEl.style.fontSize = '12px';
+
+  textContainer.appendChild(nameEl);
+  textContainer.appendChild(emailEl);
+
+  el.appendChild(avatarEl);
+  el.appendChild(textContainer);
+
+  el.addEventListener('click', () => {
+    window.location.href = `../dashboard.html?uid=${u.id}`;
+  });
+
+  searchResults.appendChild(el);
+});
+
+    }
+    catch(e) {
+      console.error('Search error:', e);
+    }
+  }, 300); // задержка для "живого поиска"
+
 });
 
 // --- SCROLL TO LOAD MORE ---

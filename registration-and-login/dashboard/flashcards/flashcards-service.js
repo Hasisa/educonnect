@@ -32,7 +32,7 @@ class FlashcardsService {
             const userId = this.getCurrentUserId();
             const card = {
                 ...cardData,
-                userId, // добавляем userId
+                userId,
                 created: serverTimestamp()
             };
             const docRef = await addDoc(collection(db, this.cardsCollection), card);
@@ -49,7 +49,7 @@ class FlashcardsService {
             const userId = this.getCurrentUserId();
             const q = query(
                 collection(db, this.cardsCollection), 
-                where('userId', '==', userId), // фильтр по пользователю
+                where('userId', '==', userId),
                 orderBy('created', 'desc')
             );
             const snapshot = await getDocs(q);
@@ -81,7 +81,7 @@ class FlashcardsService {
     // Генерация AI карточки
     async generateAICard(prompt) {
         try {
-            const response = await fetch(`${this.SERVER_URL}/ai`, {
+            const response = await fetch(`${this.SERVER_URL}/api/flashcards`, { // <- исправлено
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: prompt })

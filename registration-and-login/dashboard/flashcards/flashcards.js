@@ -1,4 +1,5 @@
-// Flashcards Trainer - Main JavaScript File
+import flashcardsService from './flashcards-service.js';
+
 class FlashcardsTrainer {
     constructor() {
         this.currentCardIndex = 0;
@@ -13,25 +14,31 @@ class FlashcardsTrainer {
         this.initializeApp();
     }
 
-    initializeApp() {
+    async initializeApp() {
         this.bindEventListeners();
         this.showNotification('Welcome to Flashcards Trainer! 🧠', 'success');
 
-        // Если пользователь уже авторизован, загружаем его карточки
-        if (window.currentUser) {
-            this.onUserLogin(window.currentUser);
-        }
+        // Автоопределение текущего пользователя через Firebase Auth
+        const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
+        const auth = getAuth();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await this.onUserLogin(user);
+            } else {
+                this.showNotification('Please log in to see your flashcards.', 'warning');
+            }
+        });
     }
 
     bindEventListeners() {
         document.getElementById('startTrainingBtn')?.addEventListener('click', () => this.startTraining());
         document.getElementById('backBtn')?.addEventListener('click', () => this.goToLanding());
         document.getElementById('createCardBtn')?.addEventListener('click', () => this.openCreateCardModal());
-
         document.getElementById('flipCardBtn')?.addEventListener('click', () => this.flipCard());
         document.getElementById('nextCardBtn')?.addEventListener('click', () => this.nextCard());
         document.getElementById('flashcard')?.addEventListener('click', () => this.flipCard());
-
         document.getElementById('closeModalBtn')?.addEventListener('click', () => this.closeCreateCardModal());
         document.getElementById('cancelBtn')?.addEventListener('click', () => this.closeCreateCardModal());
         document.getElementById('saveCardBtn')?.addEventListener('click', () => this.saveNewCard());
@@ -63,70 +70,22 @@ class FlashcardsTrainer {
         });
     }
 
-    getUserKey(key) {
-        return window.currentUser?.uid ? `${key}_${window.currentUser.uid}` : key;
-    }
-
-    saveToLocal() {
-        const cardsKey = this.getUserKey('flashcards');
-        const progressKey = this.getUserKey('userProgress');
-
-        localStorage.setItem(cardsKey, JSON.stringify(this.flashcards));
-        localStorage.setItem(progressKey, JSON.stringify(this.userProgress));
-    }
-
-    loadFromLocal() {
-        const cardsKey = this.getUserKey('flashcards');
-        const progressKey = this.getUserKey('userProgress');
-
-        const savedCards = localStorage.getItem(cardsKey);
-        const savedProgress = localStorage.getItem(progressKey);
-
-        if (savedCards) this.flashcards = JSON.parse(savedCards);
-        if (savedProgress) this.userProgress = JSON.parse(savedProgress);
-
-        this.userProgress.totalCards = this.flashcards.length;
-    }
-
     async onUserLogin(user) {
-        window.currentUser = user;
-        this.loadFromLocal();
-        await this.loadCardsFromFirebase();
-    }
-
-    async loadCardsFromFirebase() {
-        if (!window.db || !window.currentUser) return;
-
         try {
             this.showLoading(true);
-            const { collection, getDocs, query, where, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const cardsRef = collection(window.db, 'flashcards');
-            const q = query(cardsRef, where('userId', '==', window.currentUser.uid), orderBy('created', 'desc'));
-            const snapshot = await getDocs(q);
-
-            if (!snapshot.empty) {
-                this.flashcards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const result = await flashcardsService.loadCards();
+            if (result.success) {
+                this.flashcards = result.cards;
                 this.userProgress.totalCards = this.flashcards.length;
-                this.saveToLocal();
+                this.showNotification('Flashcards loaded successfully!', 'success');
+            } else {
+                this.showNotification('Failed to load flashcards: ' + result.error, 'error');
             }
         } catch (error) {
-            console.error('Error loading cards from Firebase:', error);
+            console.error(error);
+            this.showNotification('Error loading flashcards.', 'error');
         } finally {
             this.showLoading(false);
-        }
-    }
-
-    async saveCardToFirebase(card) {
-        if (!window.db || !window.currentUser) return null;
-        try {
-            const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const cardWithUser = { ...card, userId: window.currentUser.uid, created: serverTimestamp() };
-            const cardsRef = collection(window.db, 'flashcards');
-            const docRef = await addDoc(cardsRef, cardWithUser);
-            return docRef.id;
-        } catch (error) {
-            console.error('Error saving card to Firebase:', error);
-            throw error;
         }
     }
 
@@ -149,11 +108,6 @@ class FlashcardsTrainer {
         this.isCardFlipped = false;
         this.showPage('trainingPage');
         this.displayCurrentCard();
-    }
-
-    goToLanding() {
-        this.showPage('landingPage');
-        this.resetCard();
     }
 
     displayCurrentCard() {
@@ -181,15 +135,12 @@ class FlashcardsTrainer {
         flipBtn.textContent = this.isCardFlipped ? 'Show Term' : 'Show Definition';
     }
 
-    nextCard() {
+    async nextCard() {
         if (!this.flashcards.length) return;
         this.currentCardIndex = (this.currentCardIndex + 1) % this.flashcards.length;
         this.displayCurrentCard();
         this.userProgress.cardsStudied++;
         this.userProgress.lastStudyDate = new Date().toISOString();
-        this.saveToLocal();
-
-        if (this.currentCardIndex === 0) this.showNotification('Completed all cards! Starting over...', 'success');
     }
 
     resetCard() {
@@ -227,110 +178,56 @@ class FlashcardsTrainer {
     async saveNewCard() {
         const term = document.getElementById('newTerm')?.value.trim();
         const definition = document.getElementById('newDefinition')?.value.trim();
-
         if (!term || !definition) {
             this.showNotification('Please fill in both term and definition', 'warning');
             return;
         }
 
-        const termWordLimit = 10;
-        const definitionWordLimit = 50;
-
-        if (term.split(/\s+/).length > termWordLimit) {
-            this.showNotification(`Term is too long! Max ${termWordLimit} words allowed.`, 'warning');
-            return;
-        }
-
-        if (definition.split(/\s+/).length > definitionWordLimit) {
-            this.showNotification(`Definition is too long! Max ${definitionWordLimit} words allowed.`, 'warning');
-            return;
-        }
-
         try {
             this.showLoading(true);
-            const newCard = { term, definition, category: 'User Created', created: new Date().toISOString() };
-
-            if (window.db && window.currentUser) {
-                newCard.id = await this.saveCardToFirebase(newCard);
+            const result = await flashcardsService.saveCard({ term, definition, category: 'User Created' });
+            if (result.success) {
+                const newCard = { id: result.id, term, definition, category: 'User Created' };
+                this.flashcards.unshift(newCard);
+                this.userProgress.totalCards = this.flashcards.length;
+                this.showNotification('Card saved successfully! 🎉', 'success');
+                this.closeCreateCardModal();
             } else {
-                newCard.id = Date.now().toString();
+                this.showNotification('Failed to save card: ' + result.error, 'error');
             }
-
-            this.flashcards.unshift(newCard);
-            this.userProgress.totalCards = this.flashcards.length;
-            this.saveToLocal();
-
-            this.showNotification('Card saved successfully! 🎉', 'success');
-            this.closeCreateCardModal();
         } catch (error) {
             console.error(error);
-            this.showNotification('Failed to save card. Please try again.', 'error');
+            this.showNotification('Error saving card.', 'error');
         } finally {
             this.showLoading(false);
         }
     }
 
-   async generateAICard() {
-    let prompt = document.getElementById('aiPrompt')?.value.trim();
-    if (!prompt) return this.showNotification('Please enter a topic for AI generation', 'warning');
+    async generateAICard() {
+        const prompt = document.getElementById('aiPrompt')?.value.trim();
+        if (!prompt) return this.showNotification('Please enter a topic for AI generation', 'warning');
 
-    const termWordLimit = 10;
-    const definitionWordLimit = 50;
-    const promptWordLimit = 50;
-
-    // Ограничение промпта до 50 слов
-    const promptWords = prompt.split(/\s+/);
-    if (promptWords.length > promptWordLimit) {
-        prompt = promptWords.slice(0, promptWordLimit).join(' ');
-        this.showNotification(`Prompt truncated to ${promptWordLimit} words`, 'warning');
-    }
-
-    try {
-        this.showLoading(true);
-        const response = await fetch('https://school-forumforschool.onrender.com/api/flashcards', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: prompt })
-        });
-
-        if (!response.ok) throw new Error(`Server error ${response.status}`);
-
-        const data = await response.json();
-        const termInput = document.getElementById('newTerm');
-        const definitionInput = document.getElementById('newDefinition');
-
-        if (termInput && definitionInput) {
-            let generatedTerm = prompt;
-            let generatedDefinition = data.response;
-
-            if (generatedTerm.split(/\s+/).length > termWordLimit) {
-                generatedTerm = generatedTerm.split(/\s+/).slice(0, termWordLimit).join(' ');
-                this.showNotification(`Term truncated to ${termWordLimit} words`, 'warning');
+        try {
+            this.showLoading(true);
+            const result = await flashcardsService.generateAICard(prompt);
+            if (result.success) {
+                document.getElementById('newTerm').value = prompt;
+                document.getElementById('newDefinition').value = result.aiText;
+                this.showNotification('AI card generated! Review and save if you like it.', 'success');
+            } else {
+                this.showNotification(result.error, 'error');
             }
-
-            if (generatedDefinition.split(/\s+/).length > definitionWordLimit) {
-                generatedDefinition = generatedDefinition.split(/\s+/).slice(0, definitionWordLimit).join(' ');
-                this.showNotification(`Definition truncated to ${definitionWordLimit} words`, 'warning');
-            }
-
-            termInput.value = generatedTerm;
-            definitionInput.value = generatedDefinition;
+        } catch (error) {
+            console.error(error);
+            this.showNotification('Error generating AI card.', 'error');
+        } finally {
+            this.showLoading(false);
         }
-
-        this.showNotification('AI card generated! Review and save if you like it.', 'success');
-    } catch (error) {
-        console.error(error);
-        this.showNotification('Failed to generate AI card. Please try again.', 'error');
-    } finally {
-        this.showLoading(false);
     }
-}
-
 
     showNotification(message, type = 'success') {
         const notification = document.getElementById('notification');
         if (!notification) return;
-
         notification.textContent = message;
         notification.className = `notification ${type} show`;
         setTimeout(() => notification.classList.remove('show'), 4000);
@@ -341,32 +238,14 @@ class FlashcardsTrainer {
         if (!spinner) return;
         spinner.classList.toggle('active', show);
     }
-}
 
-// Utilities
-function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    goToLanding() {
+        this.showPage('landingPage');
+        this.resetCard();
     }
-    return shuffled;
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return (...args) => {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func(...args), wait);
-    };
-}
-
-// Initialize app
+// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     window.flashcardsApp = new FlashcardsTrainer();
 });
-
-// Export for Node or testing environments
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FlashcardsTrainer;
-}

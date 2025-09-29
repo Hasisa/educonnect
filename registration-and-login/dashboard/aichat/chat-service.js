@@ -45,24 +45,25 @@ class ChatService {
       orderBy('timestamp', 'asc')
     );
 
-    if (this.unsubscribe) this.unsubscribe(); // отписка от старой подписки
-
+    if (this.unsubscribe) this.unsubscribe(); 
     let initialLoadDone = false;
 
     this.unsubscribe = onSnapshot(q, (querySnapshot) => {
       const messages = [];
 
       querySnapshot.docChanges().forEach(change => {
-        const msg = { id: change.doc.id, ...change.doc.data() };
-        if (change.type === "added") messages.push(msg);
+        if (change.type === "added") {
+          const msg = { id: change.doc.id, ...change.doc.data() };
+          messages.push(msg);
+        }
       });
 
       if (!initialLoadDone) {
-        // первичная загрузка — передаем массив
+        // передаём ВСЕ сообщения при первичной загрузке
         callback(messages);
         initialLoadDone = true;
       } else {
-        // последующие изменения — по одному
+        // последующие новые сообщения — один раз на каждое сообщение
         messages.forEach(msg => callback(msg));
       }
     });

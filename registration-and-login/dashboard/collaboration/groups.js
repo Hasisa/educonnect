@@ -34,73 +34,101 @@ class GroupsManager {
         });
     }
 
-    async loadGroups() {
-        try {
-            if (window.app) app.showLoading(true);
+  async loadGroups() {
+    try {
+        if (window.app) app.showLoading(true);
 
-            const groupsSnapshot = await db.collection('groups').orderBy('createdAt', 'desc').get();
-            this.groups = groupsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            this.renderGroups();
-        } catch (error) {
-            console.error('Error loading groups:', error);
-            if (window.app) app.showNotification('Failed to load groups', 'error');
-        } finally {
-            if (window.app) app.showLoading(false);
-        }
-    }
-
-    renderGroups() {
-        const groupsGrid = document.getElementById('groupsGrid');
         const currentUser = auth.currentUser;
+        if (!currentUser) return;
 
-        if (this.groups.length === 0) {
-            groupsGrid.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-users" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
-                    <h3 style="color: var(--gray); margin-bottom: 0.5rem;">No groups yet</h3>
-                    <p style="color: var(--gray);">Create your first group to start collaborating</p>
-                </div>
-            `;
+        // Получаем ID групп пользователя
+        const userDoc = await db.collection('users').doc(currentUser.uid).get();
+        const userGroups = userDoc.data()?.groups || [];
+
+        // Если пользователь не в группах — показываем пустое состояние
+        if (!userGroups.length) {
+            this.groups = [];
+            this.renderGroups();
             return;
         }
 
-        groupsGrid.innerHTML = this.groups.map(group => {
-            const isMember = currentUser && group.members?.includes(currentUser.uid);
-            return `
-                <div class="card group-card fade-in" data-group-id="${group.id}">
-                    <div class="card-header">
-                        <div class="card-avatar">${group.name.charAt(0).toUpperCase()}</div>
-                        <div class="card-info">
-                            <h3>${group.name}</h3>
-                            <div class="card-meta">
-                                <span><i class="fas fa-users"></i> ${group.members ? group.members.length : 0} members</span>
-                            </div>
+        // Загружаем все группы без ограничений Firestore
+        const groupsPromises = userGroups.map(id => db.collection('groups').doc(id).get());
+        const groupsDocs = await Promise.all(groupsPromises);
+
+        this.groups = groupsDocs
+            .filter(doc => doc.exists)
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        this.renderGroups();
+    } catch (error) {
+        console.error('Error loading groups:', error);
+        if (window.app) app.showNotification('Failed to load groups', 'error');
+    } finally {
+        if (window.app) app.showLoading(false);
+    }
+}
+
+
+renderGroups() {
+    const groupsGrid = document.getElementById('groupsGrid');
+    const currentUser = auth.currentUser;
+
+    if (this.groups.length === 0) {
+        groupsGrid.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-users" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                <h3 style="color: var(--gray); margin-bottom: 0.5rem;">No groups yet</h3>
+                <p style="color: var(--gray);">Create your first group to start collaborating</p>
+            </div>
+        `;
+        return;
+    }
+
+    groupsGrid.innerHTML = this.groups.map(group => {
+        const isMember = currentUser && group.members?.includes(currentUser.uid);
+        return `
+            <div class="card group-card fade-in" data-group-id="${group.id}">
+                <div class="card-header">
+                    <div class="card-avatar">${group.name.charAt(0).toUpperCase()}</div>
+                    <div class="card-info">
+                        <h3>${group.name}</h3>
+                        <div class="card-meta">
+                            <span><i class="fas fa-users"></i> ${group.members ? group.members.length : 0} members</span>
                         </div>
                     </div>
-                    <p class="card-description">${group.description}</p>
-                    <div class="card-actions">
-                        <button class="card-btn view-group-btn" data-group-id="${group.id}">
-                            <i class="fas fa-eye"></i> View Group
-                        </button>
-                        ${!isMember && currentUser ? `<button class="card-btn join-group-btn" data-group-id="${group.id}"><i class="fas fa-plus"></i> Join</button>` : ''}
-                        <button class="card-btn" onclick="app.showNotification('Share link copied!', 'success')">
-                            <i class="fas fa-share"></i> Share
-                        </button>
-                    </div>
                 </div>
-            `;
-        }).join('');
+                <p class="card-description">${group.description}</p>
+                <div class="card-actions">
+                    <button class="card-btn view-group-btn" data-group-id="${group.id}">
+                        <i class="fas fa-eye"></i> View Group
+                    </button>
+                    ${!isMember && currentUser ? `<button class="card-btn join-group-btn" data-group-id="${group.id}"><i class="fas fa-plus"></i> Join</button>` : ''}
+                    <button class="card-btn share-group-btn" data-group-id="${group.id}">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
 
-        // Event listeners for view and join buttons
-        document.querySelectorAll('.view-group-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.selectGroup(e.target.dataset.groupId));
-        });
+    // Event listeners для кнопок
+    document.querySelectorAll('.view-group-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => this.selectGroup(e.target.closest('button').dataset.groupId));
+    });
 
-        document.querySelectorAll('.join-group-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.joinGroup(e.target.dataset.groupId));
+    document.querySelectorAll('.join-group-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => this.joinGroup(e.target.closest('button').dataset.groupId));
+    });
+
+    document.querySelectorAll('.share-group-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (window.app) app.showNotification('Share link copied!', 'success');
         });
-    }
+    });
+}
+
 
     showCreateGroupModal() {
         const modal = document.getElementById('createGroupModal');

@@ -121,8 +121,8 @@
 .header-user-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
+    gap: 20px;           /* больше расстояние между аватаром и инфо */
+    padding: 20px 24px;  /* увеличиваем padding */
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -133,8 +133,8 @@
 }
 
 .header-user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 64px;       /* увеличили аватар */
+    height: 64px;
     border-radius: 50%;
     overflow: hidden;
     display: flex;
@@ -153,26 +153,27 @@
 .header-user-initials {
     font-weight: 700;
     color: #64748b;
-    font-size: 14px;
+    font-size: 18px;   /* крупнее инициалы */
 }
 
 .header-user-info {
     display: flex;
     flex-direction: row;
-    gap: 16px;
+    gap: 12px;         /* имя и email рядом */
     align-items: center;
 }
 
 .header-user-name {
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 18px;    /* крупнее */
     color: #1e293b;
 }
 
 .header-user-email {
-    font-size: 12px;
-    color: #64748b;
+    font-size: 14px;    /* чуть меньше имени */
+    color: #64748b;     /* светлее */
 }
+
 
         /* Остальные стили остались без изменений */
 
