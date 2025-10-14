@@ -305,6 +305,46 @@ p {
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
+.delete-card-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background-color: red;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.delete-card-btn::before,
+.delete-card-btn::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 2px;
+    height: 12px;
+    background-color: white;
+    transform-origin: center;
+}
+
+.delete-card-btn::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.delete-card-btn::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.delete-card-btn:hover {
+    transform: scale(1.2);
+    background-color: darkred;
+}
+
 
 .training-controls {
     display: flex;

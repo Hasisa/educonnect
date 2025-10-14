@@ -1,0 +1,2 @@
+id,title,severity,timestamp,file
+vuln-0001,Potential XSS and URL Validation Vulnerabilities in JavaScript Code,HIGH,2025-09-10 18:19:13 UTC,vulnerabilities/vuln-0001.md

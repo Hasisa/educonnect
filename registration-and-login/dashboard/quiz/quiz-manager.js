@@ -3,7 +3,41 @@ class QuizManager {
     constructor() {
         this.currentQuiz = { title: '', questions: [] };
         this.editingQuizId = null;
+        this.userAnswers = [];
+        this.ensureModalContainer();
         this.initializeEventListeners();
+    }
+
+    // Один контейнер для всех модалок
+    ensureModalContainer() {
+        if (!document.getElementById('modal-container')) {
+            const container = document.createElement('div');
+            container.id = 'modal-container';
+            document.body.appendChild(container);
+
+            if (!document.querySelector('#modal-styles')) {
+                const style = document.createElement('style');
+                style.id = 'modal-styles';
+                style.textContent = `
+                    .quiz-modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2000;display:flex;align-items:center;justify-content:center;}
+                    .modal-backdrop{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
+                    .modal-content{position:relative;background:white;border-radius:12px;max-width:800px;max-height:90vh;width:90%;overflow:hidden;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);}
+                    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #e5e7eb;}
+                    .modal-header h2{margin:0;color:#111827;}
+                    .modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280;padding:4px;}
+                    .modal-body{padding:24px;max-height:60vh;overflow-y:auto;}
+                    .quiz-info{margin-bottom:20px;padding:16px;background:#f9fafb;border-radius:8px;}
+                    .quiz-info p{margin-bottom:8px;}
+                    .question-preview{margin-bottom:20px;padding:16px;border:1px solid #e5e7eb;border-radius:8px;}
+                    .question-preview h4{margin-bottom:12px;color:#111827;}
+                    .answers-preview{display:grid;gap:8px;}
+                    .answer-preview{padding:8px 12px;background:#f3f4f6;border-radius:6px;font-size:.9rem;}
+                    .answer-preview.correct{background:rgba(16,185,129,.1);color:#10b981;font-weight:500;}
+                    .modal-actions{padding:20px 24px;border-top:1px solid #e5e7eb;display:flex;gap:12px;justify-content:flex-end;}
+                `;
+                document.head.appendChild(style);
+            }
+        }
     }
 
     initializeEventListeners() {
@@ -158,35 +192,33 @@ class QuizManager {
         finally { uiManager.hideLoading(); }
     }
 
-   async callAIService(material, count) {
-    try {
-        const response = await fetch('https://school-forumforschool.onrender.com/api/quiz', { 
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ material, questionCount: count })
-        });
+    async callAIService(material, count) {
+        try {
+            const response = await fetch('https://school-forumforschool.onrender.com/api/quiz', { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ material, questionCount: count })
+            });
 
-        if (!response.ok) {
-            const text = await response.text();
-            console.error(text);
-            throw new Error('AI fetch failed');
+            if (!response.ok) {
+                const text = await response.text();
+                console.error(text);
+                throw new Error('AI fetch failed');
+            }
+
+            const data = await response.json();
+
+            if (!data.questions || !Array.isArray(data.questions)) {
+                console.error(data);
+                throw new Error('Invalid AI response');
+            }
+
+            return data.questions;
+        } catch (e) {
+            console.error(e);
+            throw e;
         }
-
-        const data = await response.json();
-
-        if (!data.questions || !Array.isArray(data.questions)) {
-            console.error(data);
-            throw new Error('Invalid AI response');
-        }
-
-        return data.questions; // возвращаем массив напрямую
-
-    } catch (e) {
-        console.error(e);
-        throw e;
     }
-}
-
 
     displayGeneratedQuiz() {
         const container = document.querySelector('.generated-quiz-preview');
@@ -199,7 +231,119 @@ class QuizManager {
                 </div>
             </div>
         `).join('');
+
+        const playBtn = document.createElement('button');
+        playBtn.className = 'btn btn-primary play-quiz-btn';
+        playBtn.textContent = 'Play Quiz';
+        playBtn.addEventListener('click', () => this.openQuizModal(this.currentQuiz));
+
+        const oldBtn = container.querySelector('.play-quiz-btn');
+        if (oldBtn) oldBtn.remove();
+
+        container.appendChild(playBtn);
         container.style.display = 'block';
+    }
+
+    // Универсальный метод открытия модалки
+    openQuizModal(quiz) {
+        const container = document.getElementById('modal-container');
+        container.innerHTML = ''; // очищаем старые модалки
+
+        const modal = document.createElement('div');
+        modal.className = 'quiz-modal';
+        modal.innerHTML = `
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>${quiz.title}</h2>
+                    <button class="modal-close">×</button>
+                </div>
+                <div id="quiz-result" style="display:none; text-align:center; margin-bottom:10px; font-weight:bold; font-size:16px;">
+                    You answered 0/0 correctly
+                </div>
+                <div class="modal-body play-quiz-body"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-secondary modal-close">Close</button>
+                </div>
+            </div>
+        `;
+
+        modal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', () => modal.remove()));
+        modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.remove());
+
+        container.appendChild(modal);
+
+        const body = modal.querySelector('.play-quiz-body');
+        this.playQuizMode(body, true);
+    }
+
+    playQuizMode(container, isModal = false) {
+        const questions = Array.isArray(this.currentQuiz.questions) ? this.currentQuiz.questions : [];
+
+        container.innerHTML = questions.map((q, i) => `
+            <div class="play-question" data-index="${i}">
+                <h4>Question ${i+1}: ${q.text}</h4>
+                <div class="play-answers">
+                    ${Array.isArray(q.answers) ? q.answers.map((a, j) => 
+                        `<button class="play-answer-btn" data-answer="${j}">
+                            ${String.fromCharCode(65+j)}. ${a}
+                        </button>`).join('') : ''}
+                </div>
+            </div>
+        `).join('');
+
+        const checkBtn = document.createElement('button');
+        checkBtn.className = 'btn btn-success check-quiz-btn';
+        checkBtn.textContent = 'Check Answers';
+        checkBtn.addEventListener('click', () => this.checkQuizAnswers(container));
+        container.appendChild(checkBtn);
+
+        this.userAnswers = [];
+
+        container.querySelectorAll('.play-answer-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.selectAnswer(e));
+        });
+    }
+
+    selectAnswer(e) {
+        const btn = e.target;
+        const questionDiv = btn.closest('.play-question');
+        const qIndex = parseInt(questionDiv.dataset.index);
+        const aIndex = parseInt(btn.dataset.answer);
+
+        this.userAnswers[qIndex] = aIndex;
+
+        questionDiv.querySelectorAll('.play-answer-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+    }
+
+    checkQuizAnswers(container) {
+        if (!this.userAnswers || this.userAnswers.length === 0) {
+            uiManager.showToast('Please answer some questions first', 'warning');
+            return;
+        }
+
+        let correctCount = 0;
+
+        this.currentQuiz.questions.forEach((q, i) => {
+            const userAnswer = this.userAnswers[i];
+            const questionDiv = container.querySelector(`.play-question[data-index="${i}"]`);
+            if (!questionDiv) return;
+            questionDiv.querySelectorAll('.play-answer-btn').forEach((btn, j) => {
+                btn.disabled = true;
+                if (j === q.correctAnswer) btn.classList.add('correct');
+                if (userAnswer === j && userAnswer !== q.correctAnswer) btn.classList.add('wrong');
+            });
+            if (userAnswer === q.correctAnswer) correctCount++;
+        });
+
+        const resultDiv = container.closest('.quiz-modal')?.querySelector('#quiz-result');
+        if (resultDiv) {
+            resultDiv.textContent = `You answered ${correctCount} / ${this.currentQuiz.questions.length} correctly`;
+            resultDiv.style.display = 'block';
+        }
+
+        uiManager.showToast(`You answered ${correctCount} / ${this.currentQuiz.questions.length} correctly`, 'success');
     }
 
     editGeneratedQuiz() {
@@ -223,8 +367,9 @@ class QuizManager {
             container.innerHTML = `<div class="empty-state"><span class="icon">📝</span><p>No quizzes created yet</p></div>`;
             return;
         }
+
         container.innerHTML = quizzes.map(q => `
-            <div class="quiz-card">
+            <div class="quiz-card" data-id="${q.id}">
                 <div class="quiz-card-header"><h3>${q.title}</h3></div>
                 <div class="quiz-meta">
                     <span>📝 ${Array.isArray(q.questions)?q.questions.length:0} questions</span>
@@ -232,12 +377,29 @@ class QuizManager {
                     ${q.generatedByAI?'<span>🤖 AI Generated</span>':'<span>✏️ Manual</span>'}
                 </div>
                 <div class="quiz-actions">
-                    <button class="btn btn-secondary btn-small" onclick="quizManager.editQuiz('${q.id}')">Edit</button>
-                    <button class="btn btn-primary btn-small" onclick="quizManager.viewQuiz('${q.id}')">View</button>
-                    <button class="btn btn-small" style="background: var(--error); color: white;" onclick="quizManager.deleteQuiz('${q.id}')">Delete</button>
+                    <button class="btn btn-secondary btn-small edit-btn">Edit</button>
+                    <button class="btn btn-primary btn-small view-btn">View</button>
+                    <button class="btn btn-primary btn-small play-btn">Play</button>
+                    <button class="btn btn-small delete-btn" style="background: var(--error); color: white;">Delete</button>
                 </div>
             </div>
         `).join('');
+
+        container.querySelectorAll('.quiz-card').forEach(card => {
+            const id = card.dataset.id;
+            card.querySelector('.edit-btn').addEventListener('click', () => this.editQuiz(id));
+            card.querySelector('.view-btn').addEventListener('click', () => this.viewQuiz(id));
+            card.querySelector('.delete-btn').addEventListener('click', () => this.deleteQuiz(id));
+            card.querySelector('.play-btn').addEventListener('click', async () => {
+                try {
+                    const quizzes = await window.firebaseManager.getQuizzes();
+                    const quiz = quizzes.find(q => q.id === id);
+                    if (!quiz) { uiManager.showToast('Quiz not found', 'error'); return; }
+                    this.currentQuiz = { title: quiz.title, questions: quiz.questions.map(q => ({ text:q.text, answers:[...q.answers], correctAnswer:q.correctAnswer })) };
+                    this.openQuizModal(this.currentQuiz);
+                } catch(e) { console.error(e); uiManager.showToast('Error loading quiz', 'error'); }
+            });
+        });
     }
 
     formatDate(timestamp) {
@@ -270,14 +432,17 @@ class QuizManager {
     }
 
     displayQuizDetails(quiz) {
+        const container = document.getElementById('modal-container');
+        container.innerHTML = ''; // очищаем старые модалки
+
         const modal = document.createElement('div');
         modal.className = 'quiz-modal';
         modal.innerHTML = `
-            <div class="modal-backdrop" onclick="this.parentElement.remove()"></div>
+            <div class="modal-backdrop"></div>
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>${quiz.title}</h2>
-                    <button class="modal-close" onclick="this.closest('.quiz-modal').remove()">×</button>
+                    <button class="modal-close">×</button>
                 </div>
                 <div class="modal-body">
                     <div class="quiz-info">
@@ -297,33 +462,14 @@ class QuizManager {
                     </div>
                 </div>
                 <div class="modal-actions">
-                    <button class="btn btn-secondary" onclick="this.closest('.quiz-modal').remove()">Close</button>
+                    <button class="btn btn-secondary modal-close">Close</button>
                     <button class="btn btn-primary" onclick="quizManager.editQuiz('${quiz.id}'); this.closest('.quiz-modal').remove();">Edit Quiz</button>
                 </div>
             </div>
         `;
-        if (!document.querySelector('#modal-styles')) {
-            const style = document.createElement('style'); style.id='modal-styles';
-            style.textContent=`
-                .quiz-modal{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2000;display:flex;align-items:center;justify-content:center;}
-                .modal-backdrop{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);}
-                .modal-content{position:relative;background:white;border-radius:12px;max-width:800px;max-height:90vh;width:90%;overflow:hidden;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);}
-                .modal-header{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #e5e7eb;}
-                .modal-header h2{margin:0;color:#111827;}
-                .modal-close{background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280;padding:4px;}
-                .modal-body{padding:24px;max-height:60vh;overflow-y:auto;}
-                .quiz-info{margin-bottom:20px;padding:16px;background:#f9fafb;border-radius:8px;}
-                .quiz-info p{margin-bottom:8px;}
-                .question-preview{margin-bottom:20px;padding:16px;border:1px solid #e5e7eb;border-radius:8px;}
-                .question-preview h4{margin-bottom:12px;color:#111827;}
-                .answers-preview{display:grid;gap:8px;}
-                .answer-preview{padding:8px 12px;background:#f3f4f6;border-radius:6px;font-size:.9rem;}
-                .answer-preview.correct{background:rgba(16,185,129,.1);color:#10b981;font-weight:500;}
-                .modal-actions{padding:20px 24px;border-top:1px solid #e5e7eb;display:flex;gap:12px;justify-content:flex-end;}
-            `;
-            document.head.appendChild(style);
-        }
-        document.body.appendChild(modal);
+        modal.querySelectorAll('.modal-close').forEach(btn => btn.addEventListener('click', () => modal.remove()));
+        modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.remove());
+        container.appendChild(modal);
     }
 
     async deleteQuiz(quizId) {

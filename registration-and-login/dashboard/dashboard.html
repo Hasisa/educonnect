@@ -329,12 +329,14 @@
         avatarInitials.textContent = getInitials(fullName);
       }
 
-      const canEdit = uid === currentUser.uid;
-      descriptionInput.disabled = !canEdit;
-      saveBtn.style.display = canEdit ? 'inline-block' : 'none';
-      classSelect.disabled = !canEdit;
-      club1Select.disabled = !canEdit;
-      club2Select.disabled = !canEdit;
+const canEdit = uid === currentUser.uid;
+descriptionInput.disabled = !canEdit;
+saveBtn.style.display = canEdit ? 'inline-block' : 'none';
+classSelect.disabled = !canEdit;
+club1Select.disabled = !canEdit;
+club2Select.disabled = !canEdit;
+logoutBtn.style.display = canEdit ? 'inline-block' : 'none';
+
 
       loadingScreen.style.display = 'none';
       dashboard.classList.remove('hidden');

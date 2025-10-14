@@ -294,7 +294,8 @@ document.addEventListener("DOMContentLoaded", () => {
       lastName: lastNameInput.value.trim(),
       email: emailInput.value.trim(),
       avatarUrl: uploadedAvatarURL,
-      searchName: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`.toLowerCase() // <-- новое поле для поиска
+      searchName: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`.toLowerCase(),
+      groups: [] // <-- добавляем пустой массив
 });
 
 

@@ -8,6 +8,7 @@ import {
   orderBy, 
   serverTimestamp, 
   doc, 
+  deleteDoc,
   setDoc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { db } from './firebase-config.js';
@@ -22,7 +23,7 @@ class FlashcardsService {
     getCurrentUserId() {
         const auth = getAuth();
         const user = auth.currentUser;
-        if (!user) throw new Error("Пользователь не авторизован");
+        if (!user) throw new Error("User is not authenticated");
         return user.uid;
     }
 
@@ -99,6 +100,17 @@ class FlashcardsService {
             return { success: false, error: `Failed to generate AI card: ${error.message}` };
         }
     }
+
+async deleteCard(cardId) {
+    try {
+        const cardRef = doc(db, this.cardsCollection, cardId);
+        await deleteDoc(cardRef); // полностью удаляет документ
+        return { success: true };
+    } catch (error) {
+        console.error('Error deleting flashcard:', error);
+        return { success: false, error: error.message };
+    }
+}
 }
 
 export default new FlashcardsService();

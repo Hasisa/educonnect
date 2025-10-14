@@ -10,12 +10,9 @@ class FlashcardsTrainer {
             totalCards: 0,
             lastStudyDate: null
         };
-
-        this.initializeApp();
     }
 
     async initializeApp() {
-        this.bindEventListeners();
         this.showNotification('Welcome to Flashcards Trainer! 🧠', 'success');
 
         // Автоопределение текущего пользователя через Firebase Auth
@@ -33,6 +30,7 @@ class FlashcardsTrainer {
     }
 
     bindEventListeners() {
+        // Кнопки управления
         document.getElementById('startTrainingBtn')?.addEventListener('click', () => this.startTraining());
         document.getElementById('backBtn')?.addEventListener('click', () => this.goToLanding());
         document.getElementById('createCardBtn')?.addEventListener('click', () => this.openCreateCardModal());
@@ -44,11 +42,38 @@ class FlashcardsTrainer {
         document.getElementById('saveCardBtn')?.addEventListener('click', () => this.saveNewCard());
         document.getElementById('generateAIBtn')?.addEventListener('click', () => this.generateAICard());
 
+        // Закрытие модалки при клике на фон
         const modal = document.getElementById('createCardModal');
         modal?.addEventListener('click', (e) => {
             if (e.target === modal) this.closeCreateCardModal();
         });
 
+        // Делегирование клика по кнопке удаления
+        document.addEventListener('click', async (e) => {
+            if (e.target.classList.contains('delete-card-btn')) {
+                const card = this.flashcards[this.currentCardIndex]; // текущая карточка
+                if (!card) return;
+                try {
+                    this.showLoading(true);
+                    const result = await flashcardsService.deleteCard(card.id);
+                    if (result.success) {
+                        this.flashcards.splice(this.currentCardIndex, 1);
+                        this.currentCardIndex = Math.min(this.currentCardIndex, this.flashcards.length - 1);
+                        this.displayCurrentCard();
+                        this.showNotification('Card deleted successfully! 🗑️', 'success');
+                    } else {
+                        this.showNotification('Failed to delete card: ' + result.error, 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    this.showNotification('Error deleting card.', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+        });
+
+        // Горячие клавиши
         document.addEventListener('keydown', (e) => {
             if (this.getCurrentPage() === 'trainingPage') {
                 switch (e.key) {
@@ -112,7 +137,11 @@ class FlashcardsTrainer {
 
     displayCurrentCard() {
         const card = this.flashcards[this.currentCardIndex];
-        if (!card) return;
+        if (!card) {
+            document.getElementById('cardTerm').textContent = 'No cards available';
+            document.getElementById('cardDefinition').textContent = 'Create new cards to start learning!';
+            return;
+        }
 
         const termElement = document.getElementById('cardTerm');
         const definitionElement = document.getElementById('cardDefinition');
@@ -248,4 +277,6 @@ class FlashcardsTrainer {
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     window.flashcardsApp = new FlashcardsTrainer();
+    window.flashcardsApp.bindEventListeners();
+    window.flashcardsApp.initializeApp();
 });
