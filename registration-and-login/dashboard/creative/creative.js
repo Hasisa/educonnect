@@ -43,6 +43,7 @@ class CreativeTools {
       'https://unpkg.com/react-dom@17/umd/react-dom.production.min.js',
       'https://unpkg.com/@excalidraw/excalidraw/dist/excalidraw.production.min.js'
     ];
+
     let loadedCount = 0;
     scripts.forEach(src => {
       const script = document.createElement('script');
@@ -54,6 +55,7 @@ class CreativeTools {
           console.log('React 17 и Excalidraw загружены');
         }
       };
+      script.onerror = () => console.error(`Failed to load script: ${src}`);
       document.head.appendChild(script);
     });
   }
@@ -62,9 +64,9 @@ class CreativeTools {
     const generateBtn = document.getElementById('generateBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const topicInput = document.getElementById('topicInput');
-    generateBtn.addEventListener('click', () => this.handleGenerate());
-    downloadBtn.addEventListener('click', () => this.handleDownload());
-    topicInput.addEventListener('keypress', e => { if (e.key === 'Enter') this.handleGenerate(); });
+    generateBtn?.addEventListener('click', () => this.handleGenerate());
+    downloadBtn?.addEventListener('click', () => this.handleDownload());
+    topicInput?.addEventListener('keypress', e => { if (e.key === 'Enter') this.handleGenerate(); });
   }
 
   async handleGenerate() {
@@ -80,11 +82,13 @@ class CreativeTools {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic, type })
       });
+
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
       await this.renderVisualization(type, data.result, topic);
+
     } catch (error) {
       console.error('Generation error:', error);
       this.showError(`Failed to generate visualization: ${error.message}`);
@@ -96,6 +100,7 @@ class CreativeTools {
   async renderVisualization(type, data, topic) {
     this.hideAllVisualizationContainers();
     document.getElementById('vizTitle').textContent = `${this.capitalizeFirst(type)}: ${topic}`;
+
     try {
       switch (type) {
         case 'mindmap': await this.renderMermaid(data, topic); break;
@@ -119,6 +124,7 @@ class CreativeTools {
       let mermaidCode = typeof data === 'string' ? data : data.mermaid || data.code || '';
       if (!mermaidCode.includes('mindmap')) mermaidCode = textToMermaidMindmap(mermaidCode, topic);
       if (!mermaidCode) throw new Error('No Mermaid code provided');
+
       const id = 'mermaid-' + Date.now();
       const { svg } = await mermaid.render(id, mermaidCode);
       div.innerHTML = svg;
@@ -144,7 +150,7 @@ class CreativeTools {
         check();
       });
 
-      if (!window.Excalidraw || !window.React || !window.ReactDOM) {
+      if (!window.Excalidraw?.Excalidraw || !window.React || !window.ReactDOM) {
         div.innerHTML = `<div style="padding:2rem;text-align:center;color:#64748b;">
           <p>Diagram cannot be rendered right now.</p>
           <pre>${JSON.stringify(elements, null, 2)}</pre>
